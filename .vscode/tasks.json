@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++",
+			"command": "D:\\VSCode-win32-x64-1.60.2\\MinGW-x64\\mingw64\\bin\\gcc.exe",
+			"args": [
+				"-o",
+				"${fileDirname}\\outDebug.exe",
+				"-I..",
+				"${file}",
+				"json.c",
+				"-lm"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compilador: D:\\VSCode-win32-x64-1.60.2\\MinGW-x64\\mingw64\\bin\\gcc.exe"
+		}
+	]
+}
