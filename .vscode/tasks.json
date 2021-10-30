@@ -7,11 +7,12 @@
 			"command": "D:\\VSCode-win32-x64-1.60.2\\MinGW-x64\\mingw64\\bin\\gcc.exe",
 			"args": [
 				"-o",
-				"${fileDirname}\\outDebug.exe",
+				"${filename}",
 				"-I..",
 				"${file}",
 				"json.c",
 				"-lm"
+				// "${fileDirname}\\outDebug.exe"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
