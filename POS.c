@@ -11,7 +11,7 @@
 #define nScreenWidth 21
 #define nScreenHeight 7
 #define FileTerminal "terminal.json"
-#define BufferSize 1024
+#define FPS 60
 
 void cDisplay(char* printScreen);
 void TelaPrincipal(void);
@@ -78,21 +78,23 @@ int main(){
         terminal[x] = JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr;
     }
     
-    for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
-        screen[i] = ' ';
-    }
+    clock_t t1;
     while(1){
+        t1 = clock();
         TelaPrincipal();
         
         screen[nScreenWidth*nScreenHeight] = '\0';
         WriteConsoleOutputCharacter(hDisplay, screen, nScreenWidth*nScreenHeight, origin, &dwBytesWritten);
+        while((clock()-t1)/CLOCKS_PER_SEC < 1/FPS){
+            //Wait frame period to finish
+        }
     }
     return 0;
 }
 
 void cDisplay(char* printScreen){
     for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
-        screen[i] = 'x';
+        screen[i] = ' ';
     }
     int s = 0;
     for(int i = 0; i <= strlen(printScreen); i++){
@@ -108,11 +110,49 @@ void cDisplay(char* printScreen){
             //pad right
             int pad = nScreenWidth - (s%nScreenWidth);
             for(int j = 0; j < pad && (s+j) < (nScreenWidth*nScreenWidth); j++){
-                screen[s + j] = 'x';
+                screen[s + j] = ' ';
             }
             s += pad;
             if(s >= (nScreenWidth*nScreenWidth))break;
         }
+        //Allign CENTER-----
+        if(printScreen[i] == '\t'){
+            i++;
+            int aux = 0;
+            int c = 0;
+            while(printScreen[i+aux] != '\t' && (s+aux) < (nScreenWidth*nScreenWidth)){
+                aux++;
+            }
+            c = aux%nScreenWidth;
+            aux -= c;
+            int pad = nScreenWidth - c;
+            //if string > screen width
+            for(int j = 0; j < aux && s < (nScreenWidth*nScreenWidth); j++){
+                screen[s] = printScreen[i];
+                s++;
+                i++;
+            }
+            //pad left
+            for(int j = 0; j < pad/2 && (s+j) < (nScreenWidth*nScreenWidth); j++){
+                screen[s + j] = ' ';
+            }
+            s += pad/2;
+            //Write center
+            for(int j = 0; j < c && s < (nScreenWidth*nScreenWidth); j++){
+                screen[s] = printScreen[i];
+                s++;
+                i++;
+            }
+            //pad right
+            pad += pad%2;
+            pad /= 2;
+            for(int j = 0; j < pad && (s+j) < (nScreenWidth*nScreenWidth); j++){
+                screen[s + j] = ' ';
+            }
+            s += pad;
+            if(s >= (nScreenWidth*nScreenWidth))break;
+        }
+        if(s >= (nScreenWidth*nScreenWidth))break;
     }
 }
 
@@ -123,7 +163,7 @@ void TelaPrincipal(void){
     // sprintf(screen, "%s", terminal[1]);
     // sprintf(screen, "%d %d %d %d", strlen(terminal[0]),
     //  strlen(terminal[1]), strlen(terminal[2]), strlen(terminal[3]));
-    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\n\n\nTecle ENTER\n\npara vender\n\n\n\n1-ESTORNO     2-RELAT\n",
+    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
     cDisplay(screenBuffer);
 }
