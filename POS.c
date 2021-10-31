@@ -92,22 +92,26 @@ int main(){
 
 void cDisplay(char* printScreen){
     for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
-        screen[i] = ' ';
+        screen[i] = 'x';
     }
     int s = 0;
-    for(int i = 0; i < sizeof(printScreen); i++){
+    for(int i = 0; i <= strlen(printScreen); i++){
+        //Allign LEFT-------
         if(printScreen[i] == '\n'){
             i++;
-            while(printScreen[i] != '\n'){
+            //write left
+            while(printScreen[i] != '\n' && s < (nScreenWidth*nScreenWidth)){
                 screen[s] = printScreen[i];
                 s++;
                 i++;
             }
-            int pad = nScreenWidth - ((s+1)%nScreenWidth);
-            for(int i = pad-1; i >= 0; i--){
-                screen[s + i] = ' ';
+            //pad right
+            int pad = nScreenWidth - (s%nScreenWidth);
+            for(int j = 0; j < pad && (s+j) < (nScreenWidth*nScreenWidth); j++){
+                screen[s + j] = 'x';
             }
             s += pad;
+            if(s >= (nScreenWidth*nScreenWidth))break;
         }
     }
 }
@@ -119,7 +123,7 @@ void TelaPrincipal(void){
     // sprintf(screen, "%s", terminal[1]);
     // sprintf(screen, "%d %d %d %d", strlen(terminal[0]),
     //  strlen(terminal[1]), strlen(terminal[2]), strlen(terminal[3]));
-    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\nTecle ENTER para vender\n\n1-ESTORNO 2-RELATORIO\n",
+    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\n\n\nTecle ENTER\n\npara vender\n\n\n\n1-ESTORNO     2-RELAT\n",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
     cDisplay(screenBuffer);
 }
