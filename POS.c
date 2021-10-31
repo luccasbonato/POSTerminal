@@ -11,8 +11,9 @@
 #define nScreenWidth 21
 #define nScreenHeight 7
 #define FileTerminal "terminal.json"
+#define BufferSize 1024
 
-void cDisplay(char *printScreen);
+void cDisplay(char* printScreen);
 void TelaPrincipal(void);
 int ReadKey(void);
 
@@ -25,6 +26,7 @@ struct tm tm;
 int main(){
     //Create Display Buffer
     screen = (char*) malloc(nScreenWidth*nScreenHeight*sizeof(char));
+    screenBuffer = (char*) malloc(nScreenWidth*nScreenHeight*sizeof(char));
     HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
@@ -69,15 +71,15 @@ int main(){
     JCterminal = (json_char*)file_contents;
     JVterminal = json_parse(JCterminal,file_size);
 
-    int length = JVterminal->u.object.length;
+    int length = JVterminal->u.object.values[0].value->u.object.length;
     terminal = (char**) malloc(length*sizeof(char*));
     for (int x = 0; x < length; x++) {
-        *terminal = (char*) malloc(sizeof(JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr)*sizeof(char));
+        terminal[x] = (char*) malloc((strlen(JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr)+1)*sizeof(char));
         terminal[x] = JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr;
     }
-
+    
     for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
-        screen[i] = 0;
+        screen[i] = ' ';
     }
     while(1){
         TelaPrincipal();
@@ -85,13 +87,12 @@ int main(){
         screen[nScreenWidth*nScreenHeight] = '\0';
         WriteConsoleOutputCharacter(hDisplay, screen, nScreenWidth*nScreenHeight, origin, &dwBytesWritten);
     }
-
     return 0;
 }
 
-void cDisplay(char *printScreen){
+void cDisplay(char* printScreen){
     for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
-        screen[i] = 0;
+        screen[i] = ' ';
     }
     int s = 0;
     for(int i = 0; i < sizeof(printScreen); i++){
@@ -114,7 +115,12 @@ void cDisplay(char *printScreen){
 void TelaPrincipal(void){
     t = time(NULL);
     tm = *localtime(&t);
-    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d %s Tecle ENTER para vender 1-ESTORNO 2-RELATORIO\n", terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+    // sprintf(screen, "%d", JVterminal->u.object.values[0].value->u.object.length);
+    // sprintf(screen, "%s", terminal[1]);
+    // sprintf(screen, "%d %d %d %d", strlen(terminal[0]),
+    //  strlen(terminal[1]), strlen(terminal[2]), strlen(terminal[3]));
+    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\nTecle ENTER para vender\n\n1-ESTORNO 2-RELATORIO\n",
+            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
     cDisplay(screenBuffer);
 }
 
