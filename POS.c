@@ -14,14 +14,27 @@
 #define FPS 60
 
 void cDisplay(char* printScreen);
-void TelaPrincipal(void);
 int ReadKey(void);
+void TelaPrincipal(void);
+void TelaMenuVenda(void);
+void TelaMenuEstorno(void);
+void TelaValorVenda(void);
+void TelaNumParcelas(void);
+void TelaNumCartao(void);
+void TelaComfirmVenda(void);
+void TelaComfirmEstorno(void);
+void TelaRelatData(void);
+void TelaErro(void);
+void PrintVenda(void);
+void PrintEstorno(void);
+void PrintRelatorio(void);
 
 char *screen, *screenBuffer, **terminal;
 json_char* JCterminal;
 json_value* JVterminal;
 time_t t;
 struct tm tm;
+uint8_t STATE = 0;
 
 int main(){
     //Create Display Buffer
@@ -81,11 +94,55 @@ int main(){
     clock_t t1;
     while(1){
         t1 = clock();
-        TelaPrincipal();
+        switch (STATE){
+            case 0://Tela Principal
+                TelaPrincipal();
+            break;
+            case 1://Tela Menu de Vendas
+                TelaMenuVenda();
+            break;
+            case 2://Tela Menu de Transações para Estorno
+                TelaMenuEstorno();
+            break;
+            case 3://Tela Valor da Venda
+                TelaValorVenda();
+            break;
+            case 4://Tela Número de Parcelas
+                TelaNumParcelas();
+            break;
+            case 5://Tela Número do Cartão
+                TelaNumCartao();
+            break;
+            case 6://Tela Confirmação de Venda
+                TelaComfirmVenda();
+            break;
+            case 7://Tela Confirmação de Estorno
+                TelaComfirmEstorno();
+            break;
+            case 8://Tela Data do Relatorio
+                TelaRelatData();
+            break;
+            case 9://Tela de Erros
+                TelaErro();
+            break;
+            case 10://Imprimir Comprovante de Venda
+                PrintVenda();
+            break;
+            case 11://Imprimir Comprovante de Estorno
+                PrintEstorno();
+            break;
+            case 12://Imprimir Relatório
+                PrintRelatorio();
+            break;
+            default:
+                TelaPrincipal();
+                STATE = 0;
+            break;
+            }
         
         screen[nScreenWidth*nScreenHeight] = '\0';
         WriteConsoleOutputCharacter(hDisplay, screen, nScreenWidth*nScreenHeight, origin, &dwBytesWritten);
-        while((clock()-t1)/CLOCKS_PER_SEC < 1/FPS){
+        while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
             //Wait frame period to finish
         }
     }
@@ -156,18 +213,6 @@ void cDisplay(char* printScreen){
     }
 }
 
-void TelaPrincipal(void){
-    t = time(NULL);
-    tm = *localtime(&t);
-    // sprintf(screen, "%d", JVterminal->u.object.values[0].value->u.object.length);
-    // sprintf(screen, "%s", terminal[1]);
-    // sprintf(screen, "%d %d %d %d", strlen(terminal[0]),
-    //  strlen(terminal[1]), strlen(terminal[2]), strlen(terminal[3]));
-    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
-            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
-    cDisplay(screenBuffer);
-}
-
 int ReadKey(void){
     int iKey = 0xF;
     if(GetAsyncKeyState((unsigned  short)'1') & 0x01){
@@ -206,8 +251,202 @@ int ReadKey(void){
     if(GetAsyncKeyState(0x0D) & 0x01){//ENTER
         iKey = 0xB;
     }
-    if(GetAsyncKeyState(0x2E) & 0x01){//DEL
+    if(GetAsyncKeyState(0x2E) & 0x01){//DEL / CANCEL
         iKey = 0xC;
     }
     return iKey;
+}
+
+void TelaPrincipal(void){//STATE = 00
+    t = time(NULL);
+    tm = *localtime(&t);
+    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
+            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            case 0xB://Key = ENTER
+                STATE = 3;//ValorVenda
+                break;
+            case 0x1://Key = 1
+                STATE = 2;//MenuEstorno
+                break;
+            case 0x2://Key = 2
+                STATE = 8;//RelatData
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaMenuVenda(void){//STATE = 01
+    sprintf(screenBuffer, "\nFalta implementar Tela Menu de Vendas\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaMenuEstorno(void){//STATE = 02
+    sprintf(screenBuffer, "\nFalta implementar Tela Menu de Estronos\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaValorVenda(void){//STATE = 03
+    sprintf(screenBuffer, "\nFalta implementar Tela Valor da Venda\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaNumParcelas(void){//STATE = 04
+    sprintf(screenBuffer, "\nFalta implementar Tela Numero de Parcelas\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaNumCartao(void){//STATE = 05
+    sprintf(screenBuffer, "\nFalta implementar Tela Numero do Cartao\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaComfirmVenda(void){//STATE = 06
+    sprintf(screenBuffer, "\nFalta implementar Tela Cofirmacao de Venda\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaComfirmEstorno(void){//STATE = 07
+    sprintf(screenBuffer, "\nFalta implementar Tela Comfirmacao de Estorno\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaRelatData(void){//STATE = 08
+    sprintf(screenBuffer, "\nFalta implementar Tela Data de Relatorio\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void TelaErro(void){//STATE = 09
+    sprintf(screenBuffer, "\nFalta implementar Tela Erros\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void PrintVenda(void){//STATE = 10
+    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Venda\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void PrintEstorno(void){//STATE = 11
+    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Estorno\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
+}
+
+void PrintRelatorio(void){//STATE = 12
+    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Relatorio\n");
+    cDisplay(screenBuffer);
+    if(WM_KEYDOWN){
+        switch (ReadKey()){
+            case 0xC://Key = CANCEL
+                STATE = 0;//TPrincipal
+                break;
+            default://Nothing pressed
+                break;
+        }
+    }
 }
