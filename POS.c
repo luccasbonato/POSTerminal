@@ -448,7 +448,7 @@ void TelaMenuVenda(void){//STATE = 01
                 break;
             case 0x2://Key = CANCEL
                 PRODUTO = 2;//Escolheu credito parcelado
-                STATE = 3;
+                STATE = 4;
                 break;
             case 0x3://Key = CANCEL
                 PRODUTO = 3;//Escolheu debito
