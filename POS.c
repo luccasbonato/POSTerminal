@@ -154,6 +154,7 @@ void cDisplay(char* printScreen){
     int s = 0;//Posição no display
     int wordSize = 0;
     int pad = 0;
+    int padC = 0;
     int sizeOfPrint = strlen(printScreen);
     for(i = 0; i < nScreenWidth*nScreenHeight; i++){
         //Limpar tela
@@ -310,6 +311,12 @@ void cDisplay(char* printScreen){
                                 }else{
                                 //Se não couber quebrar linha
                                     pad = nScreenWidth - (s%nScreenWidth);
+                                    for(int j = 0; j < (nScreenWidth - pad); j++){
+                                        screen[s-1-j+pad/2] = screen[s-1-j];
+                                    }
+                                    for(int j = 0, padC = s - (s%nScreenWidth); (j < pad/2); j++){
+                                        screen[padC+j] = ' ';
+                                    }
                                     s += pad;
                                     for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
                                         //Imprimir palavra
@@ -323,7 +330,14 @@ void cDisplay(char* printScreen){
                 }
                 //Quebrar linha quando acabar alinhamento
                 if(s < nScreenWidth*nScreenHeight){
+                    //Deslocar linha para direita
                     pad = nScreenWidth - (s%nScreenWidth);
+                    for(int j = 0; j < (nScreenWidth - pad); j++){
+                        screen[s-1-j+pad/2] = screen[s-1-j];
+                    }
+                    for(int j = 0, padC = s - (s%nScreenWidth); (j < pad/2); j++){
+                        screen[padC+j] = ' ';
+                    }
                     s += pad;
                 }else{
                     //Nada
@@ -401,9 +415,15 @@ void TelaPrincipal(void){//STATE = 00
     // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
     //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
-    //Testar o '\b' - quebra de linha
-    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
-            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+    // //Testar o '\b' - quebra de linha
+    // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
+    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+
+    // //Testar o '\n' - alinhar a esquerda - com string grande
+    sprintf(screenBuffer, "\n%s\n", terminal[5]);
+
+    // //Testar o '\t' - alinhar ao centro - com string grande
+    // sprintf(screenBuffer, "\t%s\t", terminal[5]);
 
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
