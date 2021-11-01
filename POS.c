@@ -150,135 +150,198 @@ int main(){
 }
 
 void cDisplay(char* printScreen){
-    for(int i = 0; i < nScreenWidth*nScreenHeight; i++){
+    int i = 0;//Posição na string
+    int s = 0;//Posição no display
+    int wordSize = 0;
+    int pad = 0;
+    int sizeOfPrint = strlen(printScreen);
+    for(i = 0; i < nScreenWidth*nScreenHeight; i++){
+        //Limpar tela
         screen[i] = ' ';
     }
-    int s = 0;
-    int aux = 0;
-    int auxLB = 0;
-    int c = 0;
-    int pad = 0;
-    for(int i = 0; i <= strlen(printScreen); i++){
-        aux = 0;
-        auxLB = 0;
-        c = 0;
-        pad = 0;
-        //Allign LEFT-------
-        if(printScreen[i] == '\n'){
-            i++;
-            //write left
-            while(printScreen[i] != '\n' && s < (nScreenWidth*nScreenWidth)){
-                //if = ' '
-                if((printScreen[i] == ' ')){
-                    //Check if begining of line -> remove
-                    if( (s%nScreenWidth) == 0){
-                        while((printScreen[i] == ' ') && (printScreen[i] != '\n') && (i <= strlen(printScreen))){
-                            i++;
-                        }
-                    }else{
-                        //print ' ' elsewhere and stop if at end of line
-                        while((printScreen[i] == ' ') && (printScreen[i] != '\n') && (i <= strlen(printScreen)) && ((s%nScreenWidth) != 0) ){
-                            s++;
-                            i++;
-                        }
-                    }
-                //Not ' ' i.e. word
-                }else{
-                    //Count word size
-                    auxLB = 0;
-                    while(printScreen[i+auxLB] != ' ' && printScreen[i] != '\n' && (i + auxLB) <= strlen(printScreen)){
-                        auxLB++;
-                    }
-                    //If word (size > ScreenWidth) -> hyphenate
-                    if((auxLB+1) > nScreenWidth){
-                        //If pointer is at 1 char to LB
-                        pad = nScreenWidth-(s+1)%nScreenWidth;
-                        if( pad > 1){
-                            s += pad;
-                        }
-                        while( (auxLB >= 0) && (s < nScreenWidth*nScreenHeight)){
-                            //Check if rest of word dsn't fit
-                            if(!( ((s+1)%nScreenWidth) == 0 ) && auxLB > 0){
-                                screen[s] = '-';
-                                s++;
+    for(i = 0; (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++){
+        switch (printScreen[i]){
+            case '\n':
+            //Alinhar a ESQUERDA------Inicio==================================================================================
+                i++;
+                for( ; (printScreen[i] != '\n') && (i < sizeOfPrint) ; ){
+                //caso teja dentro da string
+                    switch (printScreen[i]){
+                        case ' ':
+                        //Se for um ' '--------------Inicio
+                            if( (s%nScreenWidth) == 0 ){
+                            //Se tiver no inicio da linha
+                                for( ; (printScreen[i] == ' ') && (i < sizeOfPrint); i++){
+                                    //Remover todos os ' ' antes de uma palavra
+                                }
                             }else{
-                                screen[s] = printScreen[i];
-                                s++;
-                                i++;
-                                auxLB--;
+                            //Se não for o inicio da linha
+                                for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
+                                    (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++, s++){
+                                    //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
+                                }
                             }
-                        }
-                    }else{
-                        //If word size fits screen
-                        if( ( ((s%nScreenWidth) + auxLB)/nScreenWidth ) == 0){
-                            while(auxLB >= 0 && s < nScreenWidth*nScreenHeight){
-                                screen[s] = printScreen[i];
-                                s++;
-                                i++;
-                                auxLB--;
+                        break;
+                        //Se for um ' '--------------Fim
+
+                        case '\n':
+                        //Se for um '\n'--------------Inicio
+                            //nada
+                        break;
+                        //Se for um '\n'--------------Fim
+
+                        default:
+                        //Se for uma palavra----------Inicio
+                            for( wordSize = 0; (printScreen[i + wordSize] != ' ') && (printScreen[i + wordSize] != '\n') &&
+                                ( (i + wordSize) < sizeOfPrint); wordSize++){
+                                //Contar tamanho da palavra
                             }
-                        //If not -> pad then write
-                        }else{
-                            pad = nScreenWidth - (s%nScreenWidth);
-                            s += pad;
-                            while(auxLB >= 0 && s < nScreenWidth*nScreenHeight){
-                                screen[s] = printScreen[i];
-                                s++;
-                                i++;
-                                auxLB--;
+                            if( wordSize > nScreenWidth ){
+                            //Caso a palavra for maior que uma linha inteira
+                                if( (s+1)%nScreenWidth == 0 ){
+                                //Caso a posição do caracter do display for a ultima da linha
+                                    s++;
+                                }else{
+                                //Caso a posição não seja a ultima da linha
+                                    //nada
+                                }
+                                for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    if ( (s+1)%nScreenWidth == 0 ){
+                                    //Caso seja o ultimo caracter usar hífen
+                                        screen[s] = '-';
+                                    }else{
+                                    //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }
+                            }else{
+                            //Caso não for maior que uma linha inteira
+                                if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
+                                //Caso a palavra caber dentro da linha
+                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                        //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }else{
+                                //Se não couber quebrar linha
+                                    pad = nScreenWidth - (s%nScreenWidth);
+                                    s += pad;
+                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                        //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }
                             }
-                        }
+                        break;
+                        //Se for uma palavra----------Fim
                     }
                 }
-            }
-            //pad right
-            if(s%nScreenWidth){
+                //Quebrar linha quando acabar alinhamento
+                if(s < nScreenWidth*nScreenHeight){
+                    pad = nScreenWidth - (s%nScreenWidth);
+                    s += pad;
+                }else{
+                    //Nada
+                }
+            break;
+            //Alinhar a ESQUERDA------Fim=====================================================================================
+
+            case '\t':
+            //Alinhar ao CENTRO-------Inicio==================================================================================
+                i++;
+                for( ; (printScreen[i] != '\t') && (i < sizeOfPrint) ; ){
+                //caso teja dentro da string
+                    switch (printScreen[i]){
+                        case ' ':
+                        //Se for um ' '--------------Inicio
+                            if( (s%nScreenWidth) == 0 ){
+                            //Se tiver no inicio da linha
+                                for( ; (printScreen[i] == ' ') && (i < sizeOfPrint); i++){
+                                    //Remover todos os ' ' antes de uma palavra
+                                }
+                            }else{
+                            //Se não for o inicio da linha
+                                for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
+                                    (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++, s++){
+                                    //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
+                                }
+                            }
+                        break;
+                        //Se for um ' '--------------Fim
+
+                        case '\t':
+                        //Se for um '\n'--------------Inicio
+                            //nada
+                        break;
+                        //Se for um '\n'--------------Fim
+
+                        default:
+                        //Se for uma palavra----------Inicio
+                            for( wordSize = 0; (printScreen[i + wordSize] != ' ') && (printScreen[i + wordSize] != '\t') &&
+                                ( (i + wordSize) < sizeOfPrint); wordSize++){
+                                //Contar tamanho da palavra
+                            }
+                            if( wordSize > nScreenWidth ){
+                            //Caso a palavra for maior que uma linha inteira
+                                if( (s+1)%nScreenWidth == 0 ){
+                                //Caso a posição do caracter do display for a ultima da linha
+                                    s++;
+                                }else{
+                                //Caso a posição não seja a ultima da linha
+                                    //nada
+                                }
+                                for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    if ( (s+1)%nScreenWidth == 0 ){
+                                    //Caso seja o ultimo caracter usar hífen
+                                        screen[s] = '-';
+                                    }else{
+                                    //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }
+                            }else{
+                            //Caso não for maior que uma linha inteira
+                                if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
+                                //Caso a palavra caber dentro da linha
+                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                        //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }else{
+                                //Se não couber quebrar linha
+                                    pad = nScreenWidth - (s%nScreenWidth);
+                                    s += pad;
+                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                        //Imprimir palavra
+                                        screen[s] = printScreen[i];
+                                    }
+                                }
+                            }
+                        break;
+                        //Se for uma palavra----------Fim
+                    }
+                }
+                //Quebrar linha quando acabar alinhamento
+                if(s < nScreenWidth*nScreenHeight){
+                    pad = nScreenWidth - (s%nScreenWidth);
+                    s += pad;
+                }else{
+                    //Nada
+                }
+            //Alinhar ao CENTRO-------Fim=====================================================================================
+            break;
+
+            case '\b':
+            //Linha em branco---------Inicio==================================================================================
                 pad = nScreenWidth - (s%nScreenWidth);
                 s += pad;
-                if(s >= (nScreenWidth*nScreenWidth))break;
-            }
+            //Linha em branco---------Fim=====================================================================================
+            break;
+
+            default:
+                //Não fazer nada
+            break;
         }
-        //Allign CENTER-----
-        if(printScreen[i] == '\t'){
-            i++;
-            //Count num of char inside \t...\t
-            while(printScreen[i+aux] != '\t' && (s+aux) < (nScreenWidth*nScreenWidth)){
-                aux++;
-            }
-            c = aux%nScreenWidth;
-            aux -= c;
-            pad = nScreenWidth - c;
-            //if string > screen width
-            for(int j = 0; j < aux && s < (nScreenWidth*nScreenWidth); j++){
-                screen[s] = printScreen[i];
-                s++;
-                i++;
-            }
-            //pad left
-            for(int j = 0; j < pad/2 && (s+j) < (nScreenWidth*nScreenWidth); j++){
-                screen[s + j] = ' ';
-            }
-            s += pad/2;
-            //Write center
-            for(int j = 0; j < c && s < (nScreenWidth*nScreenWidth); j++){
-                screen[s] = printScreen[i];
-                s++;
-                i++;
-            }
-            //pad right
-            pad += pad%2;
-            pad /= 2;
-            for(int j = 0; j < pad && (s+j) < (nScreenWidth*nScreenWidth); j++){
-                screen[s + j] = ' ';
-            }
-            s += pad;
-            if(s >= (nScreenWidth*nScreenWidth))break;
-        }
-        //Empty line
-        if(printScreen[i] == '\b'){
-            s += nScreenWidth;
-        }
-        if(s >= (nScreenWidth*nScreenWidth))break;
     }
 }
 
@@ -329,8 +392,19 @@ int ReadKey(void){
 void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
-    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
+
+    // //Testar o '\n' - alinhar a esquerda
+    // sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\n\n\nTecle ENTER\n\npara vender\n\n\n\n1-ESTORNO   2-RELAT\n",
+    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+
+    // //Testar o '\t' - alinhar ao centro
+    // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
+    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+
+    //Testar o '\b' - quebra de linha
+    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         switch (ReadKey()){
