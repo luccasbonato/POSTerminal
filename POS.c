@@ -36,10 +36,14 @@ json_char* JCterminal;
 json_value* JVterminal;
 time_t t;
 struct tm tm;
+
+//Variaveis do terminal
 uint8_t STATE = 0;
 uint8_t PRODUTO = 0;
 uint8_t PARCELA = 0;
-int VENDA = 0;
+unsigned __int64 VENDA = 0;
+char *ROTULO;
+
 
 int main(){
     //Create Display Buffer
@@ -96,6 +100,7 @@ int main(){
         terminal[x] = JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr;
     }
     
+    ROTULO = (char*) malloc(TamDisplay*sizeof(char));
     clock_t t1;
     while(1){
         t1 = clock();
@@ -511,9 +516,7 @@ void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
     
-    // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
-    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
-    sprintf(screenBuffer, "\r%s %02d/%02d %02d:%02d\r\r%s\r\b\rTecle ENTER\r\rpara vender\r\b\r1-ESTORNO   2-RELAT\r",
+    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
     cDisplay(screenBuffer);
@@ -547,14 +550,17 @@ void TelaMenuVenda(void){//STATE = 01
                 break;
             case 0x1://Key = CANCEL
                 PRODUTO = 1;//Escolheu credito a vista
+                sprintf(ROTULO,"CREDITO A VISTA");
                 STATE = 3;
                 break;
             case 0x2://Key = CANCEL
                 PRODUTO = 2;//Escolheu credito parcelado
+                sprintf(ROTULO,"CREDITO PARCELADO");
                 STATE = 4;
                 break;
             case 0x3://Key = CANCEL
                 PRODUTO = 3;//Escolheu debito
+                sprintf(ROTULO,"DEBITO");
                 STATE = 3;
                 break;
             default://Nothing pressed
@@ -578,12 +584,79 @@ void TelaMenuEstorno(void){//STATE = 02
 }
 
 void TelaValorVenda(void){//STATE = 03
-    sprintf(screenBuffer, "\nFalta implementar Tela Valor da Venda\n");
+    char valor[] = "                0,00";
+    if(VENDA > 999999999999){
+        VENDA = 999999999999;
+    }
+    unsigned __int64 auxValor = VENDA;
+    int tamValor = strlen(valor);
+    for(int i = 0; (i < tamValor) && (auxValor/10 > 0) ; i++){
+        if(i < 2){
+            valor[tamValor-1-i] = auxValor%10+'0';
+            auxValor /= 10;
+        }else if(i == 2){
+            //nada
+        }else if(i>2 && ((i-2)%4 == 0)){
+            valor[tamValor-1-i] = '.';
+        }else{
+            valor[tamValor-1-i] = auxValor%10+'0';
+            auxValor /= 10;
+        }
+    }
+
+    sprintf(screenBuffer, "\t%s\t\b\rVALOR (R$)\r\b\r%s\r", ROTULO, valor);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
-        switch (ReadKey()){
+        int KeyPressed = ReadKey();
+        switch (KeyPressed){
             case 0xC://Key = CANCEL
                 STATE = 0;//TPrincipal
+                break;
+            case 0xB://Key = ENTER
+                STATE = 0;//TPrincipal
+                break;
+            case 0xA://Key = BACKSPACE
+                VENDA /= 10;
+                break;
+            case 0x1://1
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x2:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x3:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x4:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x5:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x6:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x7:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x8:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x9:
+                VENDA *= 10;
+                VENDA += KeyPressed;
+                break;
+            case 0x0:
+                VENDA *= 10;
+                VENDA += KeyPressed;
                 break;
             default://Nothing pressed
                 break;
