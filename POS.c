@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <Windows.h>
-#include <time.h>
+#include <Windows.h> //ler input de teclas
+#include <locale.h>
+#include <time.h> //contar tempo
 #include <sys/stat.h>
-#include "json.h"
+#include "json.h" //Trabalhar com objetos JSON
 
 // Compile (static linking) with
 //  gcc -o POS -I.. POS.c json.c -lm
@@ -416,15 +417,18 @@ void TelaPrincipal(void){//STATE = 00
     // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
     //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
-    // //Testar o '\b' - quebra de linha
-    // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
-    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+    //Testar o '\b' - quebra de linha
+    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
+            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
     // //Testar o '\n' - alinhar a esquerda - com string grande
     // sprintf(screenBuffer, "\n%s\n", terminal[5]);
 
-    //Testar o '\t' - alinhar ao centro - com string grande
-    sprintf(screenBuffer, "\t%s\t", terminal[4]);
+    // //Testar o '\t' - alinhar ao centro - com string grande
+    // sprintf(screenBuffer, "\t%s\t", terminal[4]);
+
+    // //Testar - palavra grande
+    // sprintf(screenBuffer, "\n%s\n\t%s\t", "astrolopitecoastrolopitecoastrolopiteco", "astrolopitecoastrolopitecoastrolopiteco");
 
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
