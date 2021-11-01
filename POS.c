@@ -154,35 +154,100 @@ void cDisplay(char* printScreen){
         screen[i] = ' ';
     }
     int s = 0;
+    int aux = 0;
+    int auxLB = 0;
+    int c = 0;
+    int pad = 0;
     for(int i = 0; i <= strlen(printScreen); i++){
+        aux = 0;
+        auxLB = 0;
+        c = 0;
+        pad = 0;
         //Allign LEFT-------
         if(printScreen[i] == '\n'){
             i++;
             //write left
             while(printScreen[i] != '\n' && s < (nScreenWidth*nScreenWidth)){
-                screen[s] = printScreen[i];
-                s++;
-                i++;
+                //if = ' '
+                if((printScreen[i] == ' ')){
+                    //Check if begining of line -> remove
+                    if( (s%nScreenWidth) == 0){
+                        while((printScreen[i] == ' ') && (printScreen[i] != '\n') && (i <= strlen(printScreen))){
+                            i++;
+                        }
+                    }else{
+                        //print ' ' elsewhere and stop if at end of line
+                        while((printScreen[i] == ' ') && (printScreen[i] != '\n') && (i <= strlen(printScreen)) && ((s%nScreenWidth) != 0) ){
+                            s++;
+                            i++;
+                        }
+                    }
+                //Not ' ' i.e. word
+                }else{
+                    //Count word size
+                    auxLB = 0;
+                    while(printScreen[i+auxLB] != ' ' && printScreen[i] != '\n' && (i + auxLB) <= strlen(printScreen)){
+                        auxLB++;
+                    }
+                    //If word (size > ScreenWidth) -> hyphenate
+                    if((auxLB+1) > nScreenWidth){
+                        //If pointer is at 1 char to LB
+                        pad = nScreenWidth-(s+1)%nScreenWidth;
+                        if( pad > 1){
+                            s += pad;
+                        }
+                        while( (auxLB >= 0) && (s < nScreenWidth*nScreenHeight)){
+                            //Check if rest of word dsn't fit
+                            if(!( ((s+1)%nScreenWidth) == 0 ) && auxLB > 0){
+                                screen[s] = '-';
+                                s++;
+                            }else{
+                                screen[s] = printScreen[i];
+                                s++;
+                                i++;
+                                auxLB--;
+                            }
+                        }
+                    }else{
+                        //If word size fits screen
+                        if( ( ((s%nScreenWidth) + auxLB)/nScreenWidth ) == 0){
+                            while(auxLB >= 0 && s < nScreenWidth*nScreenHeight){
+                                screen[s] = printScreen[i];
+                                s++;
+                                i++;
+                                auxLB--;
+                            }
+                        //If not -> pad then write
+                        }else{
+                            pad = nScreenWidth - (s%nScreenWidth);
+                            s += pad;
+                            while(auxLB >= 0 && s < nScreenWidth*nScreenHeight){
+                                screen[s] = printScreen[i];
+                                s++;
+                                i++;
+                                auxLB--;
+                            }
+                        }
+                    }
+                }
             }
             //pad right
-            int pad = nScreenWidth - (s%nScreenWidth);
-            for(int j = 0; j < pad && (s+j) < (nScreenWidth*nScreenWidth); j++){
-                screen[s + j] = ' ';
+            if(s%nScreenWidth){
+                pad = nScreenWidth - (s%nScreenWidth);
+                s += pad;
+                if(s >= (nScreenWidth*nScreenWidth))break;
             }
-            s += pad;
-            if(s >= (nScreenWidth*nScreenWidth))break;
         }
         //Allign CENTER-----
         if(printScreen[i] == '\t'){
             i++;
-            int aux = 0;
-            int c = 0;
+            //Count num of char inside \t...\t
             while(printScreen[i+aux] != '\t' && (s+aux) < (nScreenWidth*nScreenWidth)){
                 aux++;
             }
             c = aux%nScreenWidth;
             aux -= c;
-            int pad = nScreenWidth - c;
+            pad = nScreenWidth - c;
             //if string > screen width
             for(int j = 0; j < aux && s < (nScreenWidth*nScreenWidth); j++){
                 screen[s] = printScreen[i];
@@ -208,6 +273,10 @@ void cDisplay(char* printScreen){
             }
             s += pad;
             if(s >= (nScreenWidth*nScreenWidth))break;
+        }
+        //Empty line
+        if(printScreen[i] == '\b'){
+            s += nScreenWidth;
         }
         if(s >= (nScreenWidth*nScreenWidth))break;
     }
@@ -260,7 +329,7 @@ int ReadKey(void){
 void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
-    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
+    sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
