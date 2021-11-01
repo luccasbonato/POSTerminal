@@ -35,11 +35,12 @@ json_value* JVterminal;
 time_t t;
 struct tm tm;
 uint8_t STATE = 0;
+const int TamDisplay = nScreenWidth*nScreenHeight;
 
 int main(){
     //Create Display Buffer
-    screen = (char*) malloc(nScreenWidth*nScreenHeight*sizeof(char));
-    screenBuffer = (char*) malloc(nScreenWidth*nScreenHeight*sizeof(char));
+    screen = (char*) malloc(TamDisplay*sizeof(char));
+    screenBuffer = (char*) malloc(TamDisplay*sizeof(char));
     HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
@@ -140,8 +141,8 @@ int main(){
             break;
             }
         
-        screen[nScreenWidth*nScreenHeight] = '\0';
-        WriteConsoleOutputCharacter(hDisplay, screen, nScreenWidth*nScreenHeight, origin, &dwBytesWritten);
+        screen[TamDisplay] = '\0';
+        WriteConsoleOutputCharacter(hDisplay, screen, TamDisplay, origin, &dwBytesWritten);
         while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
             //Wait frame period to finish
         }
@@ -156,16 +157,16 @@ void cDisplay(char* printScreen){
     int pad = 0;
     int padC = 0;
     int sizeOfPrint = strlen(printScreen);
-    for(i = 0; i < nScreenWidth*nScreenHeight; i++){
+    for(i = 0; i < TamDisplay; i++){
         //Limpar tela
         screen[i] = ' ';
     }
-    for(i = 0; (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++){
+    for(i = 0; (i < sizeOfPrint) && (s < TamDisplay); i++){
         switch (printScreen[i]){
             case '\n':
             //Alinhar a ESQUERDA------Inicio==================================================================================
                 i++;
-                for( ; (printScreen[i] != '\n') && (i < sizeOfPrint) ; ){
+                for( ; (printScreen[i] != '\n') && (i < sizeOfPrint) && (s < TamDisplay) ; ){
                 //caso teja dentro da string
                     switch (printScreen[i]){
                         case ' ':
@@ -178,7 +179,7 @@ void cDisplay(char* printScreen){
                             }else{
                             //Se não for o inicio da linha
                                 for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
-                                    (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++, s++){
+                                    (i < sizeOfPrint) && (s < TamDisplay); i++, s++){
                                     //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
                                 }
                             }
@@ -206,7 +207,7 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                     if ( (s+1)%nScreenWidth == 0 ){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
@@ -219,7 +220,7 @@ void cDisplay(char* printScreen){
                             //Caso não for maior que uma linha inteira
                                 if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
                                 //Caso a palavra caber dentro da linha
-                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -227,7 +228,7 @@ void cDisplay(char* printScreen){
                                 //Se não couber quebrar linha
                                     pad = nScreenWidth - (s%nScreenWidth);
                                     s += pad;
-                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -238,7 +239,7 @@ void cDisplay(char* printScreen){
                     }
                 }
                 //Quebrar linha quando acabar alinhamento
-                if(s < nScreenWidth*nScreenHeight){
+                if(s < TamDisplay){
                     pad = nScreenWidth - (s%nScreenWidth);
                     s += pad;
                 }else{
@@ -250,7 +251,7 @@ void cDisplay(char* printScreen){
             case '\t':
             //Alinhar ao CENTRO-------Inicio==================================================================================
                 i++;
-                for( ; (printScreen[i] != '\t') && (i < sizeOfPrint) ; ){
+                for( ; (printScreen[i] != '\t') && (i < sizeOfPrint) && (s < TamDisplay) ; ){
                 //caso teja dentro da string
                     switch (printScreen[i]){
                         case ' ':
@@ -263,7 +264,7 @@ void cDisplay(char* printScreen){
                             }else{
                             //Se não for o inicio da linha
                                 for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
-                                    (i < sizeOfPrint) && (s < nScreenWidth*nScreenHeight); i++, s++){
+                                    (i < sizeOfPrint) && (s < TamDisplay); i++, s++){
                                     //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
                                 }
                             }
@@ -291,7 +292,7 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                     if ( (s+1)%nScreenWidth == 0 ){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
@@ -304,7 +305,7 @@ void cDisplay(char* printScreen){
                             //Caso não for maior que uma linha inteira
                                 if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
                                 //Caso a palavra caber dentro da linha
-                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -318,7 +319,7 @@ void cDisplay(char* printScreen){
                                         screen[padC+j] = ' ';
                                     }
                                     s += pad;
-                                    for( ; (wordSize > 0) && (s < nScreenWidth*nScreenHeight); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -329,7 +330,7 @@ void cDisplay(char* printScreen){
                     }
                 }
                 //Quebrar linha quando acabar alinhamento
-                if(s < nScreenWidth*nScreenHeight){
+                if(s < TamDisplay){
                     //Deslocar linha para direita
                     pad = nScreenWidth - (s%nScreenWidth);
                     for(int j = 0; j < (nScreenWidth - pad); j++){
@@ -420,10 +421,10 @@ void TelaPrincipal(void){//STATE = 00
     //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
     // //Testar o '\n' - alinhar a esquerda - com string grande
-    sprintf(screenBuffer, "\n%s\n", terminal[5]);
+    // sprintf(screenBuffer, "\n%s\n", terminal[5]);
 
-    // //Testar o '\t' - alinhar ao centro - com string grande
-    // sprintf(screenBuffer, "\t%s\t", terminal[5]);
+    //Testar o '\t' - alinhar ao centro - com string grande
+    sprintf(screenBuffer, "\t%s\t", terminal[4]);
 
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
