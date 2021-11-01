@@ -30,13 +30,14 @@ void PrintVenda(void);
 void PrintEstorno(void);
 void PrintRelatorio(void);
 
+const int TamDisplay = nScreenWidth*nScreenHeight;
 char *screen, *screenBuffer, **terminal;
 json_char* JCterminal;
 json_value* JVterminal;
 time_t t;
 struct tm tm;
 uint8_t STATE = 0;
-const int TamDisplay = nScreenWidth*nScreenHeight;
+uint8_t PRODUTO = 0;
 
 int main(){
     //Create Display Buffer
@@ -408,27 +409,9 @@ int ReadKey(void){
 void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
-
-    // //Testar o '\n' - alinhar a esquerda
-    // sprintf(screenBuffer, "\n%s %02d/%02d %02d:%02d\n\n%s\n\n\n\nTecle ENTER\n\npara vender\n\n\n\n1-ESTORNO   2-RELAT\n",
-    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
-
-    // //Testar o '\t' - alinhar ao centro
-    // sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\n\n\tTecle ENTER\t\tpara vender\t\n\n\t1-ESTORNO   2-RELAT\t",
-    //         terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
-
-    //Testar o '\b' - quebra de linha
+    
     sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
-
-    // //Testar o '\n' - alinhar a esquerda - com string grande
-    // sprintf(screenBuffer, "\n%s\n", terminal[5]);
-
-    // //Testar o '\t' - alinhar ao centro - com string grande
-    // sprintf(screenBuffer, "\t%s\t", terminal[4]);
-
-    // //Testar - palavra grande
-    // sprintf(screenBuffer, "\n%s\n\t%s\t", "astrolopitecoastrolopitecoastrolopiteco", "astrolopitecoastrolopitecoastrolopiteco");
 
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
@@ -437,7 +420,7 @@ void TelaPrincipal(void){//STATE = 00
                 STATE = 0;//TPrincipal
                 break;
             case 0xB://Key = ENTER
-                STATE = 3;//ValorVenda
+                STATE = 1;//ValorVenda
                 break;
             case 0x1://Key = 1
                 STATE = 2;//MenuEstorno
@@ -452,12 +435,24 @@ void TelaPrincipal(void){//STATE = 00
 }
 
 void TelaMenuVenda(void){//STATE = 01
-    sprintf(screenBuffer, "\nFalta implementar Tela Menu de Vendas\n");
+    sprintf(screenBuffer, "\tESCOLHA A VENDA\t\n1-CREDITO A VISTA\n\n2-CREDITO PARCELADO\n\n3-DEBITO\n");
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
                 STATE = 0;//TPrincipal
+                break;
+            case 0x1://Key = CANCEL
+                PRODUTO = 1;//Escolheu credito a vista
+                STATE = 3;
+                break;
+            case 0x2://Key = CANCEL
+                PRODUTO = 2;//Escolheu credito parcelado
+                STATE = 3;
+                break;
+            case 0x3://Key = CANCEL
+                PRODUTO = 3;//Escolheu debito
+                STATE = 3;
                 break;
             default://Nothing pressed
                 break;
