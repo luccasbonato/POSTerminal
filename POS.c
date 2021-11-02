@@ -49,11 +49,11 @@ struct tm tm;
 //Variaveis do terminal
 uint8_t STATE = 0;
 uint8_t PRODUTO = 0;
-uint8_t PARCELA = 0;
 uint8_t idERRO = 0;
 unsigned __int64 VENDA = 0;
 unsigned __int64 VMIN = 0;
 unsigned __int64 VMAX = 0;
+unsigned int PARCELAS = 0;
 char *ROTULO;
 char *IDPRODUTO;
 char *sERRO;
@@ -651,94 +651,65 @@ void TelaValorVenda(void){//STATE = 03
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
-        switch (KeyPressed){
-            case 0xC://Key = CANCEL
-                ResetVar();
-                break;
-            case 0xB://Key = ENTER
-                if(VENDA >= VMIN && VENDA <= VMAX){
-                    switch (PRODUTO){
-                        case 0x1://CREDITO A VIISTA
-                            STATE = 5;//Tela Num Cartao
-                        break;
-                        case 0x2://CREDITO PARCELADO
-                            STATE = 4;//Tela num parcela
-                        break;
-                        case 0x3://DEBITO
-                            STATE = 5;//Tela Num Cartao
-                        break;
-                        
-                        default:
+        if(KeyPressed == 0xC){
+            ResetVar();
+        }else if(KeyPressed == 0xB){//Key = ENTER
+            if(VENDA >= VMIN && VENDA <= VMAX){
+                switch (PRODUTO){
+                    case 0x1://CREDITO A VIISTA
+                        STATE = 5;//Tela Num Cartao
+                    break;
+                    case 0x2://CREDITO PARCELADO
+                        STATE = 4;//Tela num parcela
+                    break;
+                    case 0x3://DEBITO
+                        STATE = 5;//Tela Num Cartao
+                    break;
+                    
+                    default:
 
-                        break;
-                    }
-                }else if(VENDA > VMAX){
-                    idERRO = 2;//valor>mmax
-                    STATE = 9;//Tela de Erro
-                }else{
-                    idERRO = 1;//valor<min
-                    STATE = 9;//Tela de Erro
+                    break;
                 }
-                break;
-            case 0xA://Key = BACKSPACE
-                VENDA /= 10;
-                break;
-            case 0x1://1
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x2:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x3:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x4:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x5:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x6:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x7:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x8:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x9:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            case 0x0:
-                VENDA *= 10;
-                VENDA += KeyPressed;
-                break;
-            default://Nothing pressed
-                break;
+            }else if(VENDA > VMAX){
+                idERRO = 2;//valor>mmax
+                STATE = 9;//Tela de Erro
+            }else{
+                idERRO = 1;//valor<min
+                STATE = 9;//Tela de Erro
+            }
+        }else if(KeyPressed == 0xA){//Key = BACKSPACE
+            VENDA /= 10;
+        }else if(KeyPressed >= 0x0 && KeyPressed <= 0x9){
+            VENDA *= 10;
+            VENDA += KeyPressed;
+        }else{//Nothing pressed
         }
     }
 }
 
 void TelaNumParcelas(void){//STATE = 04
-    sprintf(screenBuffer, "\nFalta implementar Tela Numero de Parcelas\n");
+    if(PARCELAS>999){
+        PARCELAS = 999;
+    } 
+    sprintf(screenBuffer, "\t%s\t\b\rPARCELAS\r\b\t%dx\t", ROTULO, PARCELAS);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
-        switch (ReadKey()){
-            case 0xC://Key = CANCEL
-                ResetVar();
-                break;
-            default://Nothing pressed
-                break;
+        int KeyPressed = ReadKey();
+        if(KeyPressed == 0xC){
+            ResetVar();
+        }else if(KeyPressed == 0xB){//Key = ENTER
+            if(PARCELAS <= 1){
+                STATE = 9;
+                idERRO = 5;
+            }else{
+                STATE = 5;
+            }
+        }else if(KeyPressed == 0xA){//Key = BACKSPACE
+            PARCELAS /= 10;
+        }else if(KeyPressed >= 0x0 && KeyPressed <= 0x9){
+            PARCELAS *= 10;
+            PARCELAS += KeyPressed;
+        }else{//Nothing pressed
         }
     }
 }
@@ -901,6 +872,10 @@ void TelaErro(void){//STATE = 09
         case 4://erro de Operacao Cancelada
             sprintf(sERRO,"\t\"OPERACAO CANCELADA\"\t");
         break;
+
+        case 5://num de parcelas incorreto
+            sprintf(sERRO,"\t\"NUMERO INCORRETO DE PARCELAS\"\t");
+        break;
         
         default:
             sprintf(sERRO, "\nERRO NAO RECONHECIDO.\n");
@@ -909,12 +884,27 @@ void TelaErro(void){//STATE = 09
     sprintf(screenBuffer, "\tERRO %d\t\b%s", idERRO,sERRO);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
-        switch (ReadKey()){
-            case 0xC://Key = CANCEL
-                ResetVar();
-                break;
-            default://Nothing pressed
-                break;
+        int KeyPressed = ReadKey();
+        switch (idERRO){
+            case 5:
+                if(KeyPressed == 0xC){
+                    ResetVar();
+                }else if(KeyPressed >= 0x0 && KeyPressed <= 0xB){
+                    STATE = 4;
+                    PARCELAS = 0;
+                }else{//Nothing pressed
+
+                }
+            break;
+            default:
+                switch(KeyPressed){
+                    case 0xC://Key = CANCEL
+                        ResetVar();
+                        break;
+                    default://Nothing pressed
+                    break;
+                }
+            break;
         }
     }
 }
@@ -964,7 +954,7 @@ void PrintRelatorio(void){//STATE = 12
 void ResetVar(void){
     STATE = 0;
     PRODUTO = 0;
-    PARCELA = 0;
+    PARCELAS = 0;
     idERRO = 0;
     VENDA = 0;
     VMIN = 0;
