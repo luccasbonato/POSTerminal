@@ -54,11 +54,11 @@ uint8_t idERRO = 0;
 unsigned __int64 VENDA = 0;
 unsigned __int64 VMIN = 0;
 unsigned __int64 VMAX = 0;
-unsigned __int64 CARTAO = 0;
 char *ROTULO;
 char *IDPRODUTO;
 char *sERRO;
 char VALOR[] = "                0,00";
+char CARTAO[] = "                     ";
 char sCARTAO[] = "                     ";
 
 
@@ -142,7 +142,7 @@ int main(){
     ROTULO = (char*) malloc(TamDisplay*sizeof(char));
     IDPRODUTO = (char*) malloc(TamDisplay*sizeof(char));
     sERRO = (char*) malloc(TamDisplay*sizeof(char));
-
+    ResetVar();
     clock_t t1;
     while(1){
         t1 = clock();
@@ -252,7 +252,7 @@ void cDisplay(char* printScreen){
                                 ( (i + wordSize) < sizeOfPrint); wordSize++){
                                 //Contar tamanho da palavra
                             }
-                            if( wordSize > nScreenWidth ){
+                            if( wordSize >= nScreenWidth ){
                             //Caso a palavra for maior que uma linha inteira
                                 if( (s+1)%nScreenWidth == 0 ){
                                 //Caso a posição do caracter do display for a ultima da linha
@@ -261,18 +261,20 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
-                                    if ( (s+1)%nScreenWidth == 0 ){
+                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                    if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
                                     }else{
                                     //Imprimir palavra
                                         screen[s] = printScreen[i];
+                                        i++;
+                                        wordSize--;
                                     }
                                 }
                             }else{
                             //Caso não for maior que uma linha inteira
-                                if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
+                                if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0){
                                 //Caso a palavra caber dentro da linha
                                     for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
                                         //Imprimir palavra
@@ -337,7 +339,7 @@ void cDisplay(char* printScreen){
                                 ( (i + wordSize) < sizeOfPrint); wordSize++){
                                 //Contar tamanho da palavra
                             }
-                            if( wordSize > nScreenWidth ){
+                            if( wordSize >= nScreenWidth ){
                             //Caso a palavra for maior que uma linha inteira
                                 if( (s+1)%nScreenWidth == 0 ){
                                 //Caso a posição do caracter do display for a ultima da linha
@@ -346,13 +348,15 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
-                                    if ( (s+1)%nScreenWidth == 0 ){
+                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                    if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
                                     }else{
                                     //Imprimir palavra
                                         screen[s] = printScreen[i];
+                                        i++;
+                                        wordSize--;
                                     }
                                 }
                             }else{
@@ -435,7 +439,7 @@ void cDisplay(char* printScreen){
                                 ( (i + wordSize) < sizeOfPrint); wordSize++){
                                 //Contar tamanho da palavra
                             }
-                            if( wordSize > nScreenWidth ){
+                            if( wordSize >= nScreenWidth ){
                             //Caso a palavra for maior que uma linha inteira
                                 if( (s+1)%nScreenWidth == 0 ){
                                 //Caso a posição do caracter do display for a ultima da linha
@@ -444,13 +448,15 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
-                                    if ( (s+1)%nScreenWidth == 0 ){
+                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                    if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
                                     }else{
                                     //Imprimir palavra
                                         screen[s] = printScreen[i];
+                                        i++;
+                                        wordSize--;
                                     }
                                 }
                             }else{
@@ -738,17 +744,25 @@ void TelaNumParcelas(void){//STATE = 04
 }
 
 void TelaNumCartao(void){//STATE = 05
-    sprintf(sCARTAO, "%I64u", CARTAO);
-    int len = strlen(sCARTAO);
-    converterCartao2Notacao(sCARTAO, CARTAO);
-    sprintf(screenBuffer, "\t%s\t\b\rCARTAO\r\b\r%s\r\b\n%I64u\n", ROTULO, sCARTAO, CARTAO);
+    sprintf(sCARTAO,"");
+    int len = strlen(CARTAO);
+    char c;
+    for(int i = 0; i < len; i++){
+        if( (i > 0) && (i%4 == 0) ){
+            c = '.';
+            strncat(sCARTAO, &c, 1);
+        }
+        c = CARTAO[i];
+        strncat(sCARTAO, &c, 1);
+    }
+    sprintf(screenBuffer, "\t%s\t\b\rCARTAO\r\b\t%s\t", ROTULO, sCARTAO);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         switch (KeyPressed){
             case 0xC://Key = CANCEL
                 ResetVar();
-                break;
+            break;
             case 0xB://Key = ENTER
                 if( len<=19 && len>=11 ){
                     STATE = 6;//Tela Confirmar venda
@@ -756,52 +770,53 @@ void TelaNumCartao(void){//STATE = 05
                     idERRO = 3;//Cartao Invalido
                     STATE = 9;//Tela de Erro
                 }
-                break;
+            break;
             case 0xA://Key = BACKSPACE
-                CARTAO /= 10;
-                break;
+                CARTAO[len-1] = '\0';
+            break;
             case 0x1://1
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x2:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x3:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x4:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x5:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x6:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x7:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x8:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x9:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             case 0x0:
-                CARTAO *= 10;
-                CARTAO += KeyPressed;
-                break;
+                c = '0'+KeyPressed;
+                strncat(CARTAO, &c, 1);
+            break;
             default://Nothing pressed
-                break;
+                //nada
+            break;
         }
     }
 }
@@ -935,11 +950,11 @@ void ResetVar(void){
     VENDA = 0;
     VMIN = 0;
     VMAX = 0;
-    CARTAO = 0;
     sprintf(ROTULO,"");
     sprintf(IDPRODUTO,"");
     sprintf(sERRO,"");
     sprintf(sCARTAO,"");
+    sprintf(CARTAO,"");
 }
 
 void converterInt2Notacao(char *str, unsigned __int64 num){
@@ -960,25 +975,6 @@ void converterInt2Notacao(char *str, unsigned __int64 num){
             auxValor /= 10;
         }
     }
-}
-
-void converterCartao2Notacao(char *str, unsigned __int64 num){
-    char auxCartao[] = "                     ";
-    sprintf(str, "%I64u", num);
-    sprintf(auxCartao, "");
-    int len = strlen(str);
-    int i, j;
-    char c;
-    for(i = 0, j = 0; i < len; i++, j++){
-        c = str[i];
-        strncat(auxCartao, &c, 1);
-        if( (i+1)%4 == 0){
-            j++;
-            c = '.';
-            strncat(auxCartao, &c, 1);
-        }
-    }
-    sprintf(str,auxCartao);
 }
 
 
