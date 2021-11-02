@@ -822,12 +822,27 @@ void TelaNumCartao(void){//STATE = 05
 }
 
 void TelaComfirmVenda(void){//STATE = 06
-    sprintf(screenBuffer, "\nFalta implementar Tela Cofirmacao de Venda\n");
+    char aux[] = "                     ";
+    sprintf(aux,"R$");
+    int auxint = nScreenWidth - strlen(VALOR) - 4;
+    char c = ' ';
+    for(int i = 0; i < auxint; i++){
+        strncat(aux, &c, 1);
+    }
+    strncat(aux, VALOR, strlen(VALOR));
+    sprintf(screenBuffer, "\t%s\t\tConfirma Venda?\t\b\t%s\t\t%s\t\b\tSIM-1         2-NAO\t",ROTULO, CARTAO, aux);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
                 ResetVar();
+                break;
+            case 0x1://Key = CANCEL
+                STATE = 10;
+                break;
+            case 0x2://Key = CANCEL
+                STATE = 9;
+                idERRO = 4;
                 break;
             default://Nothing pressed
                 break;
@@ -866,28 +881,32 @@ void TelaRelatData(void){//STATE = 08
 void TelaErro(void){//STATE = 09
     switch (idERRO){
         case 0:
-            sprintf(screenBuffer, "\nNAO HA ERRO\n");
+            sprintf(sERRO, "\tNAO HA ERRO\t");
         break;
 
         case 1://erro de Valor minimo
             converterInt2Notacao(VALOR,VMIN);
-            sprintf(sERRO,"\"VALOR MENOR QUE O MINIMO DE R$ %s.\"",VALOR);
+            sprintf(sERRO,"\t\"VALOR MENOR QUE O MINIMO DE R$ %s\"\t",VALOR);
         break;
 
         case 2://erro de Valor maximo
             converterInt2Notacao(VALOR,VMAX);
-            sprintf(sERRO,"\"VALOR MENOR QUE O MAXIMO DE R$ %s.\"",VALOR);
+            sprintf(sERRO,"\t\"VALOR MENOR QUE O MAXIMO DE R$ %s\"\t",VALOR);
         break;
 
         case 3://erro de Cartao Invalido
-            sprintf(sERRO,"\"CARTAO INVALIDO.\"");
+            sprintf(sERRO,"\t\"CARTAO INVALIDO\"\t");
+        break;
+
+        case 4://erro de Operacao Cancelada
+            sprintf(sERRO,"\t\"OPERACAO CANCELADA\"\t");
         break;
         
         default:
-            sprintf(screenBuffer, "\nERRO NAO RECONHECIDO.\n");
+            sprintf(sERRO, "\nERRO NAO RECONHECIDO.\n");
         break;
     }
-    sprintf(screenBuffer, "\tERRO %d\t\b\n%s\n", idERRO,sERRO);
+    sprintf(screenBuffer, "\tERRO %d\t\b%s", idERRO,sERRO);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         switch (ReadKey()){
@@ -958,22 +977,36 @@ void ResetVar(void){
 }
 
 void converterInt2Notacao(char *str, unsigned __int64 num){
-    sprintf(str,"                0,00");
+    char aux[] = "                    ";
     unsigned __int64 auxValor = num;
-    int tamValor = strlen(str);
+    sprintf(aux,"%I64u", num);
+    int tamValor = strlen(aux);
     int i = 0;
+    char c;
+    sprintf(str,"00,0");
     for(i = 0; (i < tamValor) && auxValor > 0 ; i++){
         if(i < 2){
-            str[tamValor-1-i] = auxValor%10+'0';
+            str[i] = auxValor%10+'0';
             auxValor /= 10;
         }else if(i == 2){
-            //nada
-        }else if(i>2 && ((i-2)%4 == 0)){
-            str[tamValor-1-i] = '.';
+            str[i+1] = auxValor%10+'0';
+            auxValor /= 10;
+        }else if(i>3 && ((i-2)%3 == 0)){
+            c = '.';
+            strncat(str, &c, 1);
+            c = auxValor%10+'0';
+            strncat(str, &c, 1);
+            auxValor /= 10;
         }else{
-            str[tamValor-1-i] = auxValor%10+'0';
+            c = auxValor%10+'0';
+            strncat(str, &c, 1);
             auxValor /= 10;
         }
+    }
+    tamValor = strlen(str);
+    sprintf(aux,str);
+    for(i = 0; i < tamValor; i++){
+        str[i] = aux[tamValor-1-i];
     }
 }
 
