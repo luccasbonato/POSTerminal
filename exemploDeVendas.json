@@ -1,0 +1,20 @@
+{
+  "Exemplo": {
+    "tipo": 1,
+    "rotulo": "CREDITO A VISTA",
+    "valor": 100.00,
+    "parcelas": 0,
+    "cartao": 12345678901234,
+    "data":{
+      "dia": 10,
+      "mes": 10,
+      "ano": 2021
+    },
+    "horario":{
+      "hora": 10,
+      "min": 10,
+      "seg": 10
+    },
+    "estornada": false
+  }
+}

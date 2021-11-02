@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <Windows.h> //ler input de teclas
 #include <locale.h>
 #include <time.h> //contar tempo
@@ -11,8 +13,9 @@
 
 #define nScreenWidth 21
 #define nScreenHeight 7
-#define FileTerminal "terminal.json"
-#define FileProdutos "produtos.json"
+#define FTerminal "terminal.json"
+#define FProdutos "produtos.json"
+#define FVendas "vendas.json"
 #define FPS 60
 
 //FUNCOES AUXILIARES
@@ -79,11 +82,9 @@ int main(){
     char* file_contents_T;
     char* file_contents_P;
     struct stat filestatus_T, filestatus_P;
-    char FTerminal[] = FileTerminal;
-    char FProdutos[] = FileProdutos;
     //Read file
     fpT = fopen(FTerminal,"rb");
-    fpP = fopen(FProdutos,"rb");
+    fpP = fopen(FProdutos,"rb");;
     if ( (stat(FTerminal, &filestatus_T) != 0) || (stat(FProdutos, &filestatus_P) != 0) ) {
             return 1;
     }
@@ -612,7 +613,7 @@ void TelaMenuVenda(void){//STATE = 01
                 sprintf(IDPRODUTO,"%s",idProduto[PRODUTO-1]);
                 VMIN = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[3].value->u.dbl);
                 VMAX = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[4].value->u.dbl);
-                STATE = 4;
+                STATE = 3;
                 break;
             case 0x3://Key = CANCEL
                 PRODUTO = 3;//Escolheu debito
@@ -886,6 +887,36 @@ void TelaErro(void){//STATE = 09
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         switch (idERRO){
+            case 1:
+                if(KeyPressed == 0xC){
+                    ResetVar();
+                }else if(KeyPressed >= 0x0 && KeyPressed <= 0xB){
+                    STATE = 3;
+                    VENDA = 0;
+                }else{//Nothing pressed
+
+                }
+            break;
+            case 2:
+                if(KeyPressed == 0xC){
+                    ResetVar();
+                }else if(KeyPressed >= 0x0 && KeyPressed <= 0xB){
+                    STATE = 3;
+                    VENDA = 0;
+                }else{//Nothing pressed
+
+                }
+            break;
+            case 3:
+                if(KeyPressed == 0xC){
+                    ResetVar();
+                }else if(KeyPressed >= 0x0 && KeyPressed <= 0xB){
+                    STATE = 5;
+                    VENDA = 0;
+                }else{//Nothing pressed
+
+                }
+            break;
             case 5:
                 if(KeyPressed == 0xC){
                     ResetVar();
@@ -897,12 +928,10 @@ void TelaErro(void){//STATE = 09
                 }
             break;
             default:
-                switch(KeyPressed){
-                    case 0xC://Key = CANCEL
-                        ResetVar();
-                        break;
-                    default://Nothing pressed
-                    break;
+                if(KeyPressed >= 0x0 && KeyPressed <= 0xC){
+                    ResetVar();
+                }else{//Nothing pressed
+
                 }
             break;
         }
@@ -910,17 +939,42 @@ void TelaErro(void){//STATE = 09
 }
 
 void PrintVenda(void){//STATE = 10
-    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Venda\n");
-    cDisplay(screenBuffer);
-    if(WM_KEYDOWN){
-        switch (ReadKey()){
-            case 0xC://Key = CANCEL
-                ResetVar();
-                break;
-            default://Nothing pressed
-                break;
-        }
-    }
+    char dataToAppend[500];
+    t = time(NULL);
+    tm = *localtime(&t);
+    FILE *fpV;
+    fpV = fopen(FVendas,"r+");
+    // fseek(fpV, 0, SEEK_END);
+    // int x = 20;
+    // int i = 0;
+    // int numVend=0;
+    // for(i = 0; x > 0; i ++){
+    //     fseek(fpV,-i,SEEK_END);
+    //     if(fgetc(fpV) == '\n'){
+    //         x--;
+    //     }
+    // }
+    // for( ; ; fgets(dataToAppend, 256, fpV)){
+    //     int i = 0;
+    //     int j = 0;
+    //     while (i < n && j < m && buffer[i] == wrd[j]) {
+    //         ++i, ++j;
+    //     }
+    // }
+    // fgets(dataToAppend, 256, fpV);
+    // numVend = atoi(dataToAppend);
+    sprintf(dataToAppend,",\n\t\"Venda\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+
+    //remover final do arquivo
+    fseeko(fpV,-3,SEEK_END);
+    off_t position = ftello(fpV);
+    ftruncate(fileno(fpV), position);
+    fclose(fpV);
+    fpV = freopen(FVendas,"a+",fpV);
+    // fputs(dataToAppend, fpV);
+    fprintf(fpV,dataToAppend);
+    fclose(fpV);
+    ResetVar();
 }
 
 void PrintEstorno(void){//STATE = 11
