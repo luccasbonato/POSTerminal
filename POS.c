@@ -16,6 +16,7 @@
 #define FTerminal "terminal.json"
 #define FProdutos "produtos.json"
 #define FVendas "vendas.json"
+#define FImpressao "impressao.txt"
 #define FPS 60
 
 //FUNCOES AUXILIARES
@@ -795,6 +796,7 @@ void TelaNumCartao(void){//STATE = 05
 
 void TelaComfirmVenda(void){//STATE = 06
     char aux[] = "                     ";
+    char aux2[] = "                     ";
     sprintf(aux,"R$");
     int auxint = nScreenWidth - strlen(VALOR) - 4;
     char c = ' ';
@@ -802,7 +804,11 @@ void TelaComfirmVenda(void){//STATE = 06
         strncat(aux, &c, 1);
     }
     strncat(aux, VALOR, strlen(VALOR));
-    sprintf(screenBuffer, "\t%s\t\tConfirma Venda?\t\b\t%s\t\t%s\t\b\tSIM-1         2-NAO\t",ROTULO, CARTAO, aux);
+    sprintf(aux2,CARTAO);
+    for (int i = 4; i < strlen(aux2)-4; i++){
+        aux2[i] = '*';
+    }
+    sprintf(screenBuffer, "\t%s\t\tConfirma Venda?\t\b\t%s\t\t%s\t\b\tSIM-1         2-NAO\t",ROTULO, aux2, aux);
     cDisplay(screenBuffer);
     if(WM_KEYDOWN){
         switch (ReadKey()){
@@ -940,40 +946,48 @@ void TelaErro(void){//STATE = 09
 
 void PrintVenda(void){//STATE = 10
     char dataToAppend[500];
+    unsigned __int64 numVend = 0;
     t = time(NULL);
     tm = *localtime(&t);
-    FILE *fpV;
-    fpV = fopen(FVendas,"r+");
-    // fseek(fpV, 0, SEEK_END);
-    // int x = 20;
-    // int i = 0;
-    // int numVend=0;
-    // for(i = 0; x > 0; i ++){
-    //     fseek(fpV,-i,SEEK_END);
-    //     if(fgetc(fpV) == '\n'){
-    //         x--;
-    //     }
-    // }
-    // for( ; ; fgets(dataToAppend, 256, fpV)){
-    //     int i = 0;
-    //     int j = 0;
-    //     while (i < n && j < m && buffer[i] == wrd[j]) {
-    //         ++i, ++j;
-    //     }
-    // }
-    // fgets(dataToAppend, 256, fpV);
-    // numVend = atoi(dataToAppend);
-    sprintf(dataToAppend,",\n\t\"Venda\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
-
-    //remover final do arquivo
-    fseeko(fpV,-3,SEEK_END);
-    off_t position = ftello(fpV);
-    ftruncate(fileno(fpV), position);
-    fclose(fpV);
-    fpV = freopen(FVendas,"a+",fpV);
-    // fputs(dataToAppend, fpV);
+    FILE *fpV, *fpI;
+    fpV = fopen(FVendas,"rb+");
+    if( fpV == NULL ){
+        fpV = fopen(FVendas,"wb");
+        sprintf(dataToAppend,"{\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+    }else{
+        char wrd[] = "\"*Venda* #";
+        char *aux;
+        char buf = ' ';
+        aux = (char*) malloc( (strlen(wrd) + 1)*sizeof(char) );
+        sprintf(aux, "          ");
+        fseek(fpV,0,SEEK_END);
+        for(int i = 0;  i<1000000; i++, fseek(fpV,-i,SEEK_END)){
+            buf = fgetc(fpV);
+            for(int j = strlen(aux)-1; j > 0 ; j--){
+                aux[j] = aux[j-1];
+            }
+            aux[0] = buf;
+            if(strcmp(aux,wrd) == 0)break;
+        }
+        while(fgetc(fpV) != '#');
+        while(1){
+            buf = fgetc(fpV);
+            if(buf > '9' || buf < '0')break;
+            numVend *= 10;
+            numVend += buf-'0';
+        }
+        numVend++;
+        sprintf(dataToAppend,",\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+        //remover final do arquivo
+        fseeko(fpV,-2,SEEK_END);
+        off_t position = ftello(fpV);
+        ftruncate(fileno(fpV), position);
+        fpV = freopen(FVendas,"ab+",fpV);
+    }
     fprintf(fpV,dataToAppend);
     fclose(fpV);
+    remove(FImpressao);
+    fpV = fopen(FImpressao,"wb");
     ResetVar();
 }
 
