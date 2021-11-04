@@ -45,7 +45,7 @@ void converterCartao2Notacao(char *str, unsigned __int64 num);
 
 const int TamDisplay = nDisplayWidth*nDisplayHeight;
 const int TamImpressao = nImpressaoWidth*nImpressaoHeight;
-char *display, *displayBuffer, **terminal, **produtos, **idProduto, *impressao;
+char *display, *displayBuffer, **terminal, **produtos, **idProduto, *impressao, *impressaoBuffer;
 json_char* JCterminal;
 json_value* JVterminal;
 json_char* JCprodutos;
@@ -73,12 +73,13 @@ int main(){
     //Create Display Buffer
     display = (char*) malloc(TamDisplay*sizeof(char));
     displayBuffer = (char*) malloc(TamDisplay*sizeof(char));
+    impressao = (char*) malloc(TamImpressao*sizeof(char));
+    impressaoBuffer = (char*) malloc(TamImpressao*sizeof(char));
     HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
     DWORD dwBytesWritten = 0;
     COORD origin = {0,0};
-    SetConsoleTextAttribute(hDisplay, FOREGROUND_RED);
 
     //CONFIG FILE---------------------
     FILE *fpT, *fpP;
@@ -127,8 +128,8 @@ int main(){
     length[0] = JVterminal->u.object.values[0].value->u.object.length;
     terminal = (char**) malloc(length[0]*sizeof(char*));
     for (int x = 0; x < length[0]; x++) {
-        terminal[x] = (char*) malloc((strlen(JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr)+1)*sizeof(char));
-        terminal[x] = JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr;
+        terminal[x] = (char*) malloc( ( strlen(JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr) + 1 )*sizeof(char) );
+        sprintf(terminal[x],JVterminal->u.object.values[0].value->u.object.values[x].value->u.string.ptr);
     }
     
     //Ler produtos.json
@@ -137,9 +138,9 @@ int main(){
     idProduto = (char**) malloc(length[0]*sizeof(char*));
     for (int x = 0; x < length[0]; x++) {
         produtos[x] = (char*) malloc((strlen(JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[2].value->u.string.ptr)+1)*sizeof(char));
-        produtos[x] = JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[2].value->u.string.ptr;
+        sprintf(produtos[x],JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[2].value->u.string.ptr);
         idProduto[x] = (char*) malloc((strlen(JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[0].value->u.string.ptr)+1)*sizeof(char));
-        idProduto[x] = JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[0].value->u.string.ptr;
+        sprintf(idProduto[x],JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[0].value->u.string.ptr);
     }
     free(length);
 
@@ -952,7 +953,7 @@ void PrintVenda(void){//STATE = 10
     unsigned __int64 numVend = 0;
     t = time(NULL);
     tm = *localtime(&t);
-    FILE *fpV, *fpI;
+    FILE *fpV;
     fpV = fopen(FVendas,"rb+");
     if( fpV == NULL ){
         fpV = fopen(FVendas,"wb");
@@ -972,6 +973,7 @@ void PrintVenda(void){//STATE = 10
             aux[0] = buf;
             if(strcmp(aux,wrd) == 0)break;
         }
+        free(aux);
         while(fgetc(fpV) != '#');
         while(1){
             buf = fgetc(fpV);
@@ -989,8 +991,22 @@ void PrintVenda(void){//STATE = 10
     }
     fprintf(fpV,dataToAppend);
     fclose(fpV);
-    remove(FImpressao);
     fpV = fopen(FImpressao,"wb");
+    sprintf(impressaoBuffer,"\t%s\t\t%s\t\tCNPJ: %s\t\b\tDATA: %02d/%02d/%d TERMINAL: %s\t\b\n%s\n\n%s\n\b\tVALOR APROVADO: R$ %s\t\b\n%s\n",
+            terminal[3],terminal[1],terminal[2],tm.tm_mday,tm.tm_mon,tm.tm_year+1900,terminal[0],ROTULO,
+            sCARTAO,VALOR,terminal[4]);
+    cDisplay(impressaoBuffer, impressao, nImpressaoWidth, TamImpressao);
+    for(int i = 0; i < strlen(impressao); i++){
+        char c[] = " ";
+        c[0] = impressao[i];
+        fprintf(fpV,c);
+        if ( (i+1)%nImpressaoWidth == 0 ){
+            c[0] = '\n';
+            fprintf(fpV,c);
+        }
+    }
+    
+    fclose(fpV);
     ResetVar();
 }
 
