@@ -11,8 +11,10 @@
 // Compile (static linking) with
 //  gcc -o POS -I.. POS.c json.c -lm
 
-#define nScreenWidth 21
-#define nScreenHeight 7
+#define nDisplayWidth 21
+#define nDisplayHeight 7
+#define nImpressaoWidth 40
+#define nImpressaoHeight 50
 #define FTerminal "terminal.json"
 #define FProdutos "produtos.json"
 #define FVendas "vendas.json"
@@ -20,7 +22,7 @@
 #define FPS 60
 
 //FUNCOES AUXILIARES
-void cDisplay(char* printScreen);
+void cDisplay(char* printScreen, char* screen, int nScreenWidth, int TamScreen);
 int ReadKey(void);
 void converterInt2Notacao(char *str, unsigned __int64 num);
 void ResetVar(void);
@@ -41,8 +43,9 @@ void PrintEstorno(void);
 void PrintRelatorio(void);
 void converterCartao2Notacao(char *str, unsigned __int64 num);
 
-const int TamDisplay = nScreenWidth*nScreenHeight;
-char *screen, *screenBuffer, **terminal, **produtos, **idProduto;
+const int TamDisplay = nDisplayWidth*nDisplayHeight;
+const int TamImpressao = nImpressaoWidth*nImpressaoHeight;
+char *display, *displayBuffer, **terminal, **produtos, **idProduto, *impressao;
 json_char* JCterminal;
 json_value* JVterminal;
 json_char* JCprodutos;
@@ -68,8 +71,8 @@ char sCARTAO[] = "                     ";
 
 int main(){
     //Create Display Buffer
-    screen = (char*) malloc(TamDisplay*sizeof(char));
-    screenBuffer = (char*) malloc(TamDisplay*sizeof(char));
+    display = (char*) malloc(TamDisplay*sizeof(char));
+    displayBuffer = (char*) malloc(TamDisplay*sizeof(char));
     HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
@@ -197,8 +200,8 @@ int main(){
             break;
             }
         
-        screen[TamDisplay] = '\0';
-        WriteConsoleOutputCharacter(hDisplay, screen, TamDisplay, origin, &dwBytesWritten);
+        display[TamDisplay] = '\0';
+        WriteConsoleOutputCharacter(hDisplay, display, TamDisplay, origin, &dwBytesWritten);
         while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
             //Wait frame period to finish
         }
@@ -206,23 +209,23 @@ int main(){
     return 0;
 }
 
-void cDisplay(char* printScreen){
+void cDisplay(char* printScreen, char* screen, int nScreenWidth, int TamScreen){
     int i = 0;//Posição na string
     int s = 0;//Posição no display
     int wordSize = 0;
     int pad = 0;
     int padC = 0;
     int sizeOfPrint = strlen(printScreen);
-    for(i = 0; i < TamDisplay; i++){
+    for(i = 0; i < TamScreen; i++){
         //Limpar tela
         screen[i] = ' ';
     }
-    for(i = 0; (i < sizeOfPrint) && (s < TamDisplay); i++){
+    for(i = 0; (i < sizeOfPrint) && (s < TamScreen); i++){
         switch (printScreen[i]){
             case '\n':
             //Alinhar a ESQUERDA------Inicio==================================================================================
                 i++;
-                for( ; (printScreen[i] != '\n') && (i < sizeOfPrint) && (s < TamDisplay) ; ){
+                for( ; (printScreen[i] != '\n') && (i < sizeOfPrint) && (s < TamScreen) ; ){
                 //caso teja dentro da string
                     switch (printScreen[i]){
                         case ' ':
@@ -235,7 +238,7 @@ void cDisplay(char* printScreen){
                             }else{
                             //Se não for o inicio da linha
                                 for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
-                                    (i < sizeOfPrint) && (s < TamDisplay); i++, s++){
+                                    (i < sizeOfPrint) && (s < TamScreen); i++, s++){
                                     //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
                                 }
                             }
@@ -263,7 +266,7 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                for( ; (wordSize > 0) && (s < TamScreen); s++){
                                     if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
@@ -278,7 +281,7 @@ void cDisplay(char* printScreen){
                             //Caso não for maior que uma linha inteira
                                 if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0){
                                 //Caso a palavra caber dentro da linha
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -286,7 +289,7 @@ void cDisplay(char* printScreen){
                                 //Se não couber quebrar linha
                                     pad = nScreenWidth - (s%nScreenWidth);
                                     s += pad;
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -297,7 +300,7 @@ void cDisplay(char* printScreen){
                     }
                 }
                 //Quebrar linha quando acabar alinhamento
-                if(s < TamDisplay){
+                if(s < TamScreen){
                     pad = nScreenWidth - (s%nScreenWidth);
                     s += pad;
                 }else{
@@ -309,7 +312,7 @@ void cDisplay(char* printScreen){
             case '\t':
             //Alinhar ao CENTRO-------Inicio==================================================================================
                 i++;
-                for( ; (printScreen[i] != '\t') && (i < sizeOfPrint) && (s < TamDisplay) ; ){
+                for( ; (printScreen[i] != '\t') && (i < sizeOfPrint) && (s < TamScreen) ; ){
                 //caso teja dentro da string
                     switch (printScreen[i]){
                         case ' ':
@@ -322,7 +325,7 @@ void cDisplay(char* printScreen){
                             }else{
                             //Se não for o inicio da linha
                                 for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
-                                    (i < sizeOfPrint) && (s < TamDisplay); i++, s++){
+                                    (i < sizeOfPrint) && (s < TamScreen); i++, s++){
                                     //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
                                 }
                             }
@@ -350,7 +353,7 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                for( ; (wordSize > 0) && (s < TamScreen); s++){
                                     if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
@@ -365,7 +368,7 @@ void cDisplay(char* printScreen){
                             //Caso não for maior que uma linha inteira
                                 if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
                                 //Caso a palavra caber dentro da linha
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -379,7 +382,7 @@ void cDisplay(char* printScreen){
                                         screen[padC+j] = ' ';
                                     }
                                     s += pad;
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -390,7 +393,7 @@ void cDisplay(char* printScreen){
                     }
                 }
                 //Quebrar linha quando acabar alinhamento
-                if(s < TamDisplay){
+                if(s < TamScreen){
                     //Deslocar linha para direita
                     pad = nScreenWidth - (s%nScreenWidth);
                     for(int j = 0; j < (nScreenWidth - pad); j++){
@@ -409,7 +412,7 @@ void cDisplay(char* printScreen){
             case '\r':
             //Alinhar a DIREITA-------Inicio==================================================================================
                 i++;
-                for( ; (printScreen[i] != '\r') && (i < sizeOfPrint) && (s < TamDisplay) ; ){
+                for( ; (printScreen[i] != '\r') && (i < sizeOfPrint) && (s < TamScreen) ; ){
                 //caso teja dentro da string
                     switch (printScreen[i]){
                         case ' ':
@@ -422,7 +425,7 @@ void cDisplay(char* printScreen){
                             }else{
                             //Se não for o inicio da linha
                                 for( ; (printScreen[i] == ' ') && ((s%nScreenWidth) != 0) &&
-                                    (i < sizeOfPrint) && (s < TamDisplay); i++, s++){
+                                    (i < sizeOfPrint) && (s < TamScreen); i++, s++){
                                     //Imprimir todos os ' ' antes de uma palavra ou até chegar no fim da linha
                                 }
                             }
@@ -450,7 +453,7 @@ void cDisplay(char* printScreen){
                                 //Caso a posição não seja a ultima da linha
                                     //nada
                                 }
-                                for( ; (wordSize > 0) && (s < TamDisplay); s++){
+                                for( ; (wordSize > 0) && (s < TamScreen); s++){
                                     if ( (s+1)%nScreenWidth == 0 && wordSize > 1){
                                     //Caso seja o ultimo caracter usar hífen
                                         screen[s] = '-';
@@ -465,7 +468,7 @@ void cDisplay(char* printScreen){
                             //Caso não for maior que uma linha inteira
                                 if( ( ((s%nScreenWidth) + wordSize)/nScreenWidth ) == 0 ){
                                 //Caso a palavra caber dentro da linha
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -480,7 +483,7 @@ void cDisplay(char* printScreen){
                                         screen[padC+j] = ' ';
                                     }
                                     s += pad;
-                                    for( ; (wordSize > 0) && (s < TamDisplay); i++, s++, wordSize--){
+                                    for( ; (wordSize > 0) && (s < TamScreen); i++, s++, wordSize--){
                                         //Imprimir palavra
                                         screen[s] = printScreen[i];
                                     }
@@ -491,7 +494,7 @@ void cDisplay(char* printScreen){
                     }
                 }
                 //Quebrar linha quando acabar alinhamento
-                if(s < TamDisplay){
+                if(s < TamScreen){
                     //Deslocar linha para direita
                     pad = nScreenWidth - (s%nScreenWidth);
                     for(int j = 0; j < (nScreenWidth - pad); j++){
@@ -568,10 +571,10 @@ int ReadKey(void){
 void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
-    sprintf(screenBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
+    sprintf(displayBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
             terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
 
-    cDisplay(screenBuffer);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -593,8 +596,8 @@ void TelaPrincipal(void){//STATE = 00
 }
 
 void TelaMenuVenda(void){//STATE = 01
-    sprintf(screenBuffer, "\tESCOLHA A VENDA\t\n1-CREDITO A VISTA\n\n2-CREDITO PARCELADO\n\n3-DEBITO\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\tESCOLHA A VENDA\t\n1-CREDITO A VISTA\n\n2-CREDITO PARCELADO\n\n3-DEBITO\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -631,8 +634,8 @@ void TelaMenuVenda(void){//STATE = 01
 }
 
 void TelaMenuEstorno(void){//STATE = 02
-    sprintf(screenBuffer, "\nFalta implementar Tela Menu de Estronos\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\nFalta implementar Tela Menu de Estronos\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -649,8 +652,8 @@ void TelaValorVenda(void){//STATE = 03
         VENDA = 999999999999;
     }
     converterInt2Notacao(VALOR, VENDA);
-    sprintf(screenBuffer, "\t%s\t\b\rVALOR (R$)\r\b\r%s\r", ROTULO, VALOR);
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\t%s\t\b\rVALOR (R$)\r\b\r%s\r", ROTULO, VALOR);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         if(KeyPressed == 0xC){
@@ -693,8 +696,8 @@ void TelaNumParcelas(void){//STATE = 04
     if(PARCELAS>999){
         PARCELAS = 999;
     } 
-    sprintf(screenBuffer, "\t%s\t\b\rPARCELAS\r\b\t%dx\t", ROTULO, PARCELAS);
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\t%s\t\b\rPARCELAS\r\b\t%dx\t", ROTULO, PARCELAS);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         if(KeyPressed == 0xC){
@@ -728,8 +731,8 @@ void TelaNumCartao(void){//STATE = 05
         c = CARTAO[i];
         strncat(sCARTAO, &c, 1);
     }
-    sprintf(screenBuffer, "\t%s\t\b\rCARTAO\r\b\t%s\t", ROTULO, sCARTAO);
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\t%s\t\b\rCARTAO\r\b\t%s\t", ROTULO, sCARTAO);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         switch (KeyPressed){
@@ -798,7 +801,7 @@ void TelaComfirmVenda(void){//STATE = 06
     char aux[] = "                     ";
     char aux2[] = "                     ";
     sprintf(aux,"R$");
-    int auxint = nScreenWidth - strlen(VALOR) - 4;
+    int auxint = nDisplayWidth - strlen(VALOR) - 4;
     char c = ' ';
     for(int i = 0; i < auxint; i++){
         strncat(aux, &c, 1);
@@ -808,8 +811,8 @@ void TelaComfirmVenda(void){//STATE = 06
     for (int i = 4; i < strlen(aux2)-4; i++){
         aux2[i] = '*';
     }
-    sprintf(screenBuffer, "\t%s\t\tConfirma Venda?\t\b\t%s\t\t%s\t\b\tSIM-1         2-NAO\t",ROTULO, aux2, aux);
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\t%s\t\tConfirma Venda?\t\b\t%s\t\t%s\t\b\tSIM-1         2-NAO\t",ROTULO, aux2, aux);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -829,8 +832,8 @@ void TelaComfirmVenda(void){//STATE = 06
 }
 
 void TelaComfirmEstorno(void){//STATE = 07
-    sprintf(screenBuffer, "\nFalta implementar Tela Comfirmacao de Estorno\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\nFalta implementar Tela Comfirmacao de Estorno\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -843,8 +846,8 @@ void TelaComfirmEstorno(void){//STATE = 07
 }
 
 void TelaRelatData(void){//STATE = 08
-    sprintf(screenBuffer, "\nFalta implementar Tela Data de Relatorio\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\nFalta implementar Tela Data de Relatorio\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -888,8 +891,8 @@ void TelaErro(void){//STATE = 09
             sprintf(sERRO, "\nERRO NAO RECONHECIDO.\n");
         break;
     }
-    sprintf(screenBuffer, "\tERRO %d\t\b%s", idERRO,sERRO);
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\tERRO %d\t\b%s", idERRO,sERRO);
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
         switch (idERRO){
@@ -992,8 +995,8 @@ void PrintVenda(void){//STATE = 10
 }
 
 void PrintEstorno(void){//STATE = 11
-    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Estorno\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\nFalta implementar Tela Impressao de Estorno\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
@@ -1006,8 +1009,8 @@ void PrintEstorno(void){//STATE = 11
 }
 
 void PrintRelatorio(void){//STATE = 12
-    sprintf(screenBuffer, "\nFalta implementar Tela Impressao de Relatorio\n");
-    cDisplay(screenBuffer);
+    sprintf(displayBuffer, "\nFalta implementar Tela Impressao de Relatorio\n");
+    cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
             case 0xC://Key = CANCEL
