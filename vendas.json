@@ -1366,5 +1366,293 @@
 			"seg": 20
 		},
 		"estornada": false
+	},
+	"*Venda* #76": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 111111111111111,
+		"data":{
+			"dia": 4,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 23,
+			"min": 54,
+			"seg": 19
+		},
+		"estornada": false
+	},
+	"*Venda* #77": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 4,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 23,
+			"min": 55,
+			"seg": 16
+		},
+		"estornada": false
+	},
+	"*Venda* #78": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 4,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 23,
+			"min": 56,
+			"seg": 16
+		},
+		"estornada": false
+	},
+	"*Venda* #79": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 0,
+			"seg": 12
+		},
+		"estornada": false
+	},
+	"*Venda* #80": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 0.00,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 3,
+			"seg": 37
+		},
+		"estornada": false
+	},
+	"*Venda* #81": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 111111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 4,
+			"seg": 18
+		},
+		"estornada": false
+	},
+	"*Venda* #82": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 4,
+			"seg": 57
+		},
+		"estornada": false
+	},
+	"*Venda* #83": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 11111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 9,
+			"seg": 25
+		},
+		"estornada": false
+	},
+	"*Venda* #84": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 9,
+			"seg": 54
+		},
+		"estornada": false
+	},
+	"*Venda* #85": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 17,
+			"seg": 16
+		},
+		"estornada": false
+	},
+	"*Venda* #86": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 11111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 17,
+			"seg": 44
+		},
+		"estornada": false
+	},
+	"*Venda* #87": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 25,
+			"seg": 54
+		},
+		"estornada": false
+	},
+	"*Venda* #88": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 26,
+			"seg": 32
+		},
+		"estornada": false
+	},
+	"*Venda* #89": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 28,
+			"seg": 4
+		},
+		"estornada": false
+	},
+	"*Venda* #90": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 36,
+			"seg": 34
+		},
+		"estornada": false
+	},
+	"*Venda* #91": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 0.00,
+		"parcelas": 0,
+		"cartao": 111111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 0,
+			"min": 36,
+			"seg": 44
+		},
+		"estornada": false
 	}
 }

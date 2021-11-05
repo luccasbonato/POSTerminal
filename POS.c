@@ -679,9 +679,11 @@ void TelaValorVenda(void){//STATE = 03
             }else if(VENDA > VMAX){
                 idERRO = 2;//valor>mmax
                 STATE = 9;//Tela de Erro
+                VENDA = 0;
             }else{
                 idERRO = 1;//valor<min
                 STATE = 9;//Tela de Erro
+                VENDA = 0;
             }
         }else if(KeyPressed == 0xA){//Key = BACKSPACE
             VENDA /= 10;
@@ -707,6 +709,7 @@ void TelaNumParcelas(void){//STATE = 04
             if(PARCELAS <= 1){
                 STATE = 9;
                 idERRO = 5;
+                PARCELAS = 0;
             }else{
                 STATE = 5;
             }
@@ -746,6 +749,7 @@ void TelaNumCartao(void){//STATE = 05
                 }else{
                     idERRO = 3;//Cartao Invalido
                     STATE = 9;//Tela de Erro
+                    sprintf(CARTAO,"");
                 }
             break;
             case 0xA://Key = BACKSPACE
@@ -991,10 +995,41 @@ void PrintVenda(void){//STATE = 10
     }
     fprintf(fpV,dataToAppend);
     fclose(fpV);
+    sprintf(dataToAppend,"");
+    char c[] = "   ";
+    char cnpj[] = "99.999.999/9999-99";
+    sprintf(cnpj,"");
+    sprintf(c," ");
+    for(int i = 0; i < strlen(terminal[2]); i++){
+        if(i == 2 || i == 5){
+            c[0] = '.';
+            strncat(cnpj,c,1);
+        }
+        if(i == 8){
+            c[0] = '/';
+            strncat(cnpj,c,1);
+        }
+        if(i == 12){
+            c[0] = '-';
+            strncat(cnpj,c,1);
+        }
+        c[0] = terminal[2][i];
+        strncat(cnpj,c,1);
+    }
+    sprintf(c," ");
+    for( int i = 0; i < nImpressaoWidth - strlen(VALOR) - 16 - 4;i++){
+        strncat(dataToAppend,c,1);
+    }
+    sprintf(c,"R$ ");
+    strncat(dataToAppend,c,strlen(c));
+    strncat(dataToAppend,VALOR,strlen(VALOR));
+    for(int i = 0; i < strlen(CARTAO) - 4; i++){
+        CARTAO[i] = '*';
+    }
     fpV = fopen(FImpressao,"wb");
-    sprintf(impressaoBuffer,"\t%s\t\t%s\t\tCNPJ: %s\t\b\tDATA: %02d/%02d/%d TERMINAL: %s\t\b\n%s\n\n%s\n\b\tVALOR APROVADO: R$ %s\t\b\n%s\n",
-            terminal[3],terminal[1],terminal[2],tm.tm_mday,tm.tm_mon,tm.tm_year+1900,terminal[0],ROTULO,
-            sCARTAO,VALOR,terminal[4]);
+    sprintf(impressaoBuffer,"\t%s\t\t%s\t\tCNPJ: %s\t\b\tDATA: %02d/%02d/%d TERMINAL: %s\t\b\n%s\n\n%s\n\b\tVALOR APROVADO: %s\t\b\n%s\n",
+            terminal[3],terminal[1],cnpj,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,terminal[0],ROTULO,
+            CARTAO,dataToAppend,terminal[4]);
     cDisplay(impressaoBuffer, impressao, nImpressaoWidth, TamImpressao);
     for(int i = 0; i < strlen(impressao); i++){
         char c[] = " ";
@@ -1005,7 +1040,6 @@ void PrintVenda(void){//STATE = 10
             fprintf(fpV,c);
         }
     }
-    
     fclose(fpV);
     ResetVar();
 }
