@@ -71,10 +71,10 @@ char sCARTAO[] = "                     ";
 
 int main(){
     //Create Display Buffer
-    display = (char*) malloc(TamDisplay*sizeof(char));
-    displayBuffer = (char*) malloc(TamDisplay*sizeof(char));
-    impressao = (char*) malloc(TamImpressao*sizeof(char));
-    impressaoBuffer = (char*) malloc(TamImpressao*sizeof(char));
+    display = (char*) malloc( ( TamDisplay + nDisplayHeight )*sizeof(char));
+    displayBuffer = (char*) malloc( ( TamDisplay + nDisplayHeight )*sizeof(char));
+    impressao = (char*) malloc( ( TamImpressao + nImpressaoHeight )*sizeof(char));
+    impressaoBuffer = (char*) malloc( ( TamImpressao + nImpressaoHeight )*sizeof(char));
     HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
@@ -150,6 +150,7 @@ int main(){
     sERRO = (char*) malloc(TamDisplay*sizeof(char));
     ResetVar();
     clock_t t1;
+    char displayLines[nDisplayHeight][nDisplayWidth];
     while(1){
         t1 = clock();
         switch (STATE){
@@ -201,8 +202,16 @@ int main(){
             break;
             }
         
-        display[TamDisplay] = '\0';
-        WriteConsoleOutputCharacter(hDisplay, display, TamDisplay, origin, &dwBytesWritten);
+        display[strlen(display)-1] = '\0';
+        // WriteConsoleOutputCharacter(hDisplay, display, TamDisplay, origin, &dwBytesWritten);
+
+        for(int i = 0; i < nDisplayHeight; i++){
+            for(int j = 0; j < nDisplayWidth; j++){
+                displayLines[i][j] = display[i*nDisplayWidth+j];
+            }
+            COORD origin = {0,i};
+            WriteConsoleOutputCharacter(hDisplay, displayLines[i], nDisplayWidth, origin, &dwBytesWritten);
+        }
         while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
             //Wait frame period to finish
         }
