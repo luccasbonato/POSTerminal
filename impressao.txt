@@ -2,12 +2,12 @@
     Av. Ruy Carneiro, 300. Miramar.     
         CNPJ: 21.505.538/0001-28        
                                         
-  DATA: 05/10/2021 TERMINAL: TERM0001   
+  DATA: 05/11/2021 TERMINAL: TERM0001   
                                         
 CREDITO A VISTA                         
-***********1111                         
+*********1111                           
                                         
-VALOR APROVADO:                R$ 11,11 
+VALOR APROVADO:               R$ 111,11 
                                         
 A Phoebus é uma empresa que atua no    
 mercado de meios de pagamentos há 18   

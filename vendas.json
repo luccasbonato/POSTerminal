@@ -1654,5 +1654,41 @@
 			"seg": 44
 		},
 		"estornada": false
+	},
+	"*Venda* #92": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 11111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 10,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 20,
+			"min": 56,
+			"seg": 16
+		},
+		"estornada": false
+	},
+	"*Venda* #93": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 5,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 21,
+			"min": 16,
+			"seg": 56
+		},
+		"estornada": false
 	}
 }

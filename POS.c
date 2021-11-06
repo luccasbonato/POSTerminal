@@ -1,86 +1,40 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <Windows.h> //ler input de teclas
-#include <locale.h>
-#include <time.h> //contar tempo
-#include <sys/stat.h>
-#include "json.h" //Trabalhar com objetos JSON
-
-// Compile (static linking) with
-//  gcc -o POS -I.. POS.c json.c -lm
-
-#define nDisplayWidth 21
-#define nDisplayHeight 7
-#define nImpressaoWidth 40
-#define nImpressaoHeight 50
-#define FTerminal "terminal.json"
-#define FProdutos "produtos.json"
-#define FVendas "vendas.json"
-#define FImpressao "impressao.txt"
-#define FPS 60
-
-//FUNCOES AUXILIARES
-void cDisplay(char* printScreen, char* screen, int nScreenWidth, int TamScreen);
-int ReadKey(void);
-void converterInt2Notacao(char *str, unsigned __int64 num);
-void ResetVar(void);
-
-//ESTADOS
-void TelaPrincipal(void);
-void TelaMenuVenda(void);
-void TelaMenuEstorno(void);
-void TelaValorVenda(void);
-void TelaNumParcelas(void);
-void TelaNumCartao(void);
-void TelaComfirmVenda(void);
-void TelaComfirmEstorno(void);
-void TelaRelatData(void);
-void TelaErro(void);
-void PrintVenda(void);
-void PrintEstorno(void);
-void PrintRelatorio(void);
-void converterCartao2Notacao(char *str, unsigned __int64 num);
-
-const int TamDisplay = nDisplayWidth*nDisplayHeight;
-const int TamImpressao = nImpressaoWidth*nImpressaoHeight;
-char *display, *displayBuffer, **terminal, **produtos, **idProduto, *impressao, *impressaoBuffer;
-json_char* JCterminal;
-json_value* JVterminal;
-json_char* JCprodutos;
-json_value* JVprodutos;
-time_t t;
-struct tm tm;
-
-//Variaveis do terminal
-uint8_t STATE = 0;
-uint8_t PRODUTO = 0;
-uint8_t idERRO = 0;
-unsigned __int64 VENDA = 0;
-unsigned __int64 VMIN = 0;
-unsigned __int64 VMAX = 0;
-unsigned int PARCELAS = 0;
-char *ROTULO;
-char *IDPRODUTO;
-char *sERRO;
-char VALOR[] = "                0,00";
-char CARTAO[] = "                     ";
-char sCARTAO[] = "                     ";
-
+#include "POS.h"
 
 int main(){
-    //Create Display Buffer
-    display = (char*) malloc( ( TamDisplay + nDisplayHeight )*sizeof(char));
-    displayBuffer = (char*) malloc( ( TamDisplay + nDisplayHeight )*sizeof(char));
+    iniciarPOS();
+    while(1){
+        t1 = clock();
+        maquinaEstados();
+        displayTerminal();
+        while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
+            //Wait frame period to finish
+        }
+    }
+    freeVariaveis();
+    return 0;
+}
+
+void iniciarPOS(void){
+    //Alloc Display Buffer
+    display = (char*) malloc(TamDisplay*sizeof(char));
+    displayBuffer = (char*) malloc(TamDisplay*sizeof(char));
     impressao = (char*) malloc( ( TamImpressao + nImpressaoHeight )*sizeof(char));
     impressaoBuffer = (char*) malloc( ( TamImpressao + nImpressaoHeight )*sizeof(char));
-    HANDLE hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
+    hDisplay = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                                 CONSOLE_TEXTMODE_BUFFER, NULL);
     SetConsoleActiveScreenBuffer(hDisplay);
-    DWORD dwBytesWritten = 0;
-    COORD origin = {0,0};
+    dwBytesWritten = 0;
 
+    configTerminal();
+
+    ROTULO = (char*) malloc(TamDisplay*sizeof(char));
+    IDPRODUTO = (char*) malloc(TamDisplay*sizeof(char));
+    sERRO = (char*) malloc(TamDisplay*sizeof(char));
+    ResetVar();
+    char displayLines[nDisplayHeight][nDisplayWidth];
+}
+
+void configTerminal(void){
     //CONFIG FILE---------------------
     FILE *fpT, *fpP;
     int file_size_T, file_size_P;
@@ -91,7 +45,7 @@ int main(){
     fpT = fopen(FTerminal,"rb");
     fpP = fopen(FProdutos,"rb");;
     if ( (stat(FTerminal, &filestatus_T) != 0) || (stat(FProdutos, &filestatus_P) != 0) ) {
-            return 1;
+            
     }
     file_size_T = filestatus_T.st_size;
     file_size_P = filestatus_P.st_size;
@@ -102,14 +56,12 @@ int main(){
         fclose(fpP);
         free(file_contents_T);
         free(file_contents_P);
-        return 1;
     }
     if ( (fread(file_contents_T, file_size_T, 1, fpT) != 1) || fread(file_contents_P, file_size_P, 1, fpP) != 1 ) {
         fclose(fpT);
         fclose(fpP);
         free(file_contents_T);
         free(file_contents_P);
-        return 1;
     }
     fclose(fpT);
     fclose(fpP);
@@ -143,80 +95,83 @@ int main(){
         sprintf(idProduto[x],JVprodutos->u.object.values[0].value->u.object.values[x].value->u.object.values[0].value->u.string.ptr);
     }
     free(length);
+}
 
-    
-    ROTULO = (char*) malloc(TamDisplay*sizeof(char));
-    IDPRODUTO = (char*) malloc(TamDisplay*sizeof(char));
-    sERRO = (char*) malloc(TamDisplay*sizeof(char));
-    ResetVar();
-    clock_t t1;
-    char displayLines[nDisplayHeight][nDisplayWidth];
-    while(1){
-        t1 = clock();
-        switch (STATE){
-            case 0://Tela Principal
-                TelaPrincipal();
-            break;
-            case 1://Tela Menu de Vendas
-                TelaMenuVenda();
-            break;
-            case 2://Tela Menu de Transações para Estorno
-                TelaMenuEstorno();
-            break;
-            case 3://Tela Valor da Venda
-                TelaValorVenda();
-            break;
-            case 4://Tela Número de Parcelas
-                TelaNumParcelas();
-            break;
-            case 5://Tela Número do Cartão
-                TelaNumCartao();
-            break;
-            case 6://Tela Confirmação de Venda
-                TelaComfirmVenda();
-            break;
-            case 7://Tela Confirmação de Estorno
-                TelaComfirmEstorno();
-            break;
-            case 8://Tela Data do Relatorio
-                TelaRelatData();
-            break;
-            case 9://Tela de Erros
-                TelaErro();
-            break;
-            case 10://Imprimir Comprovante de Venda
-                PrintVenda();
-            break;
-            case 11://Imprimir Comprovante de Estorno
-                PrintEstorno();
-            break;
-            case 12://Imprimir Relatório
-                PrintRelatorio();
-            break;
-            case 13://RESET
-                PrintRelatorio();
-            break;
-            default:
-                TelaPrincipal();
-                STATE = 0;
-            break;
-            }
-        
-        display[strlen(display)-1] = '\0';
-        // WriteConsoleOutputCharacter(hDisplay, display, TamDisplay, origin, &dwBytesWritten);
-
-        for(int i = 0; i < nDisplayHeight; i++){
-            for(int j = 0; j < nDisplayWidth; j++){
-                displayLines[i][j] = display[i*nDisplayWidth+j];
-            }
-            COORD origin = {0,i};
-            WriteConsoleOutputCharacter(hDisplay, displayLines[i], nDisplayWidth, origin, &dwBytesWritten);
-        }
-        while( ((float)(clock()-t1)/CLOCKS_PER_SEC) < ((float)1/FPS)){
-            //Wait frame period to finish
-        }
+void maquinaEstados(void){
+    switch (STATE){
+        case 0://Tela Principal
+            TelaPrincipal();
+        break;
+        case 1://Tela Menu de Vendas
+            TelaMenuVenda();
+        break;
+        case 2://Tela Menu de Transações para Estorno
+            TelaMenuEstorno();
+        break;
+        case 3://Tela Valor da Venda
+            TelaValorVenda();
+        break;
+        case 4://Tela Número de Parcelas
+            TelaNumParcelas();
+        break;
+        case 5://Tela Número do Cartão
+            TelaNumCartao();
+        break;
+        case 6://Tela Confirmação de Venda
+            TelaComfirmVenda();
+        break;
+        case 7://Tela Confirmação de Estorno
+            TelaComfirmEstorno();
+        break;
+        case 8://Tela Data do Relatorio
+            TelaRelatData();
+        break;
+        case 9://Tela de Erros
+            TelaErro();
+        break;
+        case 10://Imprimir Comprovante de Venda
+            PrintVenda();
+        break;
+        case 11://Imprimir Comprovante de Estorno
+            PrintEstorno();
+        break;
+        case 12://Imprimir Relatório
+            PrintRelatorio();
+        break;
+        case 13://RESET
+            PrintRelatorio();
+        break;
+        default:
+            TelaPrincipal();
+            STATE = 0;
+        break;
     }
-    return 0;
+}
+
+void displayTerminal(void){
+    display[strlen(display)-1] = '\0';
+    char displayLine[nDisplayWidth];
+    for(int i = 0; i < nDisplayHeight; i++){
+        for(int j = 0; j < nDisplayWidth; j++){
+            displayLine[j] = display[i*nDisplayWidth+j];
+        }
+        origin = (COORD) {0,i};
+        WriteConsoleOutputCharacter(hDisplay, displayLine, nDisplayWidth, origin, &dwBytesWritten);
+    }
+}
+
+void freeVariaveis(void){
+    free(display);
+    free(displayBuffer);
+    free(impressao);
+    free(impressaoBuffer);
+    free(ROTULO);
+    free(IDPRODUTO);
+    free(sERRO);
+    free(JCterminal);
+    free(JVterminal);
+    free(JCprodutos);
+    free(JVprodutos);
 }
 
 void cDisplay(char* printScreen, char* screen, int nScreenWidth, int TamScreen){
@@ -582,25 +537,25 @@ void TelaPrincipal(void){//STATE = 00
     t = time(NULL);
     tm = *localtime(&t);
     sprintf(displayBuffer, "\t%s %02d/%02d %02d:%02d\t\t%s\t\b\tTecle ENTER\t\tpara vender\t\b\t1-ESTORNO   2-RELAT\t",
-            terminal[0], tm.tm_mday, tm.tm_mon, tm.tm_hour, tm.tm_min, terminal[3]);
+            terminal[0], tm.tm_mday, tm.tm_mon+1, tm.tm_hour, tm.tm_min, terminal[3]);
 
     cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         switch (ReadKey()){
-            case 0xC://Key = CANCEL
+            case KeyCANCEL://Key = CANCEL
                 ResetVar();
-                break;
-            case 0xB://Key = ENTER
+            break;
+            case KeyENTER://Key = ENTER
                 STATE = 1;//ValorVenda
-                break;
-            case 0x1://Key = 1
+            break;
+            case Key01://Key = 1
                 STATE = 2;//MenuEstorno
-                break;
-            case 0x2://Key = 2
+            break;
+            case Key02://Key = 2
                 STATE = 8;//RelatData
-                break;
+            break;
             default://Nothing pressed
-                break;
+            break;
         }
     }
 }
@@ -609,36 +564,18 @@ void TelaMenuVenda(void){//STATE = 01
     sprintf(displayBuffer, "\tESCOLHA A VENDA\t\n1-CREDITO A VISTA\n\n2-CREDITO PARCELADO\n\n3-DEBITO\n");
     cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
-        switch (ReadKey()){
-            case 0xC://Key = CANCEL
-                ResetVar();
-                break;
-            case 0x1://Key = CANCEL
-                PRODUTO = 1;//Escolheu credito a vista
-                sprintf(ROTULO,"%s",produtos[PRODUTO-1]);
-                sprintf(IDPRODUTO,"%s",idProduto[PRODUTO-1]);
-                VMIN = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[3].value->u.dbl);
-                VMAX = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[4].value->u.dbl);
-                STATE = 3;
-                break;
-            case 0x2://Key = CANCEL
-                PRODUTO = 2;//Escolheu credito parcelado
-                sprintf(ROTULO,"%s",produtos[PRODUTO-1]);
-                sprintf(IDPRODUTO,"%s",idProduto[PRODUTO-1]);
-                VMIN = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[3].value->u.dbl);
-                VMAX = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[4].value->u.dbl);
-                STATE = 3;
-                break;
-            case 0x3://Key = CANCEL
-                PRODUTO = 3;//Escolheu debito
-                sprintf(ROTULO,"%s",produtos[PRODUTO-1]);
-                sprintf(IDPRODUTO,"%s",idProduto[PRODUTO-1]);
-                VMIN = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[3].value->u.dbl);
-                VMAX = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[4].value->u.dbl);
-                STATE = 3;
-                break;
-            default://Nothing pressed
-                break;
+        int keyPressed = ReadKey();
+        if(keyPressed == KeyCANCEL){
+            ResetVar();
+        }else if(keyPressed >= Key00 && keyPressed <= Key09){
+            PRODUTO = keyPressed;//Escolheu credito a vista
+            sprintf(ROTULO,"%s",produtos[PRODUTO-1]);
+            sprintf(IDPRODUTO,"%s",idProduto[PRODUTO-1]);
+            VMIN = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[3].value->u.dbl);
+            VMAX = (unsigned __int64)100*(JVprodutos->u.object.values[0].value->u.object.values[PRODUTO-1].value->u.object.values[4].value->u.dbl);
+            STATE = 3;
+        }else {
+            //Fazer nada
         }
     }
 }
@@ -666,9 +603,9 @@ void TelaValorVenda(void){//STATE = 03
     cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
-        if(KeyPressed == 0xC){
+        if(KeyPressed == KeyCANCEL){
             ResetVar();
-        }else if(KeyPressed == 0xB){//Key = ENTER
+        }else if(KeyPressed == KeyENTER){//Key = ENTER
             if(VENDA >= VMIN && VENDA <= VMAX){
                 switch (PRODUTO){
                     case 0x1://CREDITO A VIISTA
@@ -694,9 +631,9 @@ void TelaValorVenda(void){//STATE = 03
                 STATE = 9;//Tela de Erro
                 VENDA = 0;
             }
-        }else if(KeyPressed == 0xA){//Key = BACKSPACE
+        }else if(KeyPressed == KeyBACKSPACE){//Key = BACKSPACE
             VENDA /= 10;
-        }else if(KeyPressed >= 0x0 && KeyPressed <= 0x9){
+        }else if(KeyPressed >= Key00 && KeyPressed <= Key09){
             VENDA *= 10;
             VENDA += KeyPressed;
         }else{//Nothing pressed
@@ -712,9 +649,9 @@ void TelaNumParcelas(void){//STATE = 04
     cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
-        if(KeyPressed == 0xC){
+        if(KeyPressed == KeyCANCEL){
             ResetVar();
-        }else if(KeyPressed == 0xB){//Key = ENTER
+        }else if(KeyPressed == KeyENTER){//Key = ENTER
             if(PARCELAS <= 1){
                 STATE = 9;
                 idERRO = 5;
@@ -722,9 +659,9 @@ void TelaNumParcelas(void){//STATE = 04
             }else{
                 STATE = 5;
             }
-        }else if(KeyPressed == 0xA){//Key = BACKSPACE
+        }else if(KeyPressed == KeyBACKSPACE){//Key = BACKSPACE
             PARCELAS /= 10;
-        }else if(KeyPressed >= 0x0 && KeyPressed <= 0x9){
+        }else if(KeyPressed >= Key00 && KeyPressed <= Key09){
             PARCELAS *= 10;
             PARCELAS += KeyPressed;
         }else{//Nothing pressed
@@ -748,65 +685,23 @@ void TelaNumCartao(void){//STATE = 05
     cDisplay(displayBuffer, display, nDisplayWidth, TamDisplay);
     if(WM_KEYDOWN){
         int KeyPressed = ReadKey();
-        switch (KeyPressed){
-            case 0xC://Key = CANCEL
-                ResetVar();
-            break;
-            case 0xB://Key = ENTER
-                if( len<=19 && len>=11 ){
-                    STATE = 6;//Tela Confirmar venda
-                }else{
-                    idERRO = 3;//Cartao Invalido
-                    STATE = 9;//Tela de Erro
-                    sprintf(CARTAO,"");
-                }
-            break;
-            case 0xA://Key = BACKSPACE
-                CARTAO[len-1] = '\0';
-            break;
-            case 0x1://1
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x2:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x3:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x4:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x5:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x6:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x7:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x8:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x9:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            case 0x0:
-                c = '0'+KeyPressed;
-                strncat(CARTAO, &c, 1);
-            break;
-            default://Nothing pressed
-                //nada
-            break;
+        if(KeyPressed == KeyCANCEL){
+            ResetVar();
+        }else if(KeyPressed == KeyENTER){
+            if( len<=19 && len>=11 ){
+                STATE = 6;//Tela Confirmar venda
+            }else{
+                idERRO = 3;//Cartao Invalido
+                STATE = 9;//Tela de Erro
+                sprintf(CARTAO,"");
+            }
+        }else if(KeyPressed == KeyBACKSPACE){
+            CARTAO[len-1] = '\0';
+        }else if(KeyPressed >= Key00 && KeyPressed <= Key09){
+            c = '0'+KeyPressed;
+            strncat(CARTAO, &c, 1);
+        }else {
+            //Fazer nada
         }
     }
 }
@@ -970,7 +865,7 @@ void PrintVenda(void){//STATE = 10
     fpV = fopen(FVendas,"rb+");
     if( fpV == NULL ){
         fpV = fopen(FVendas,"wb");
-        sprintf(dataToAppend,"{\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+        sprintf(dataToAppend,"{\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
     }else{
         char wrd[] = "\"*Venda* #";
         char *aux;
@@ -995,7 +890,7 @@ void PrintVenda(void){//STATE = 10
             numVend += buf-'0';
         }
         numVend++;
-        sprintf(dataToAppend,",\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
+        sprintf(dataToAppend,",\n\t\"*Venda* #%I64u\": {\n\t\t\"tipo\": %d,\n\t\t\"rotulo\": \"%s\",\n\t\t\"valor\": %lld.%02d,\n\t\t\"parcelas\": %d,\n\t\t\"cartao\": %s,\n\t\t\"data\":{\n\t\t\t\"dia\": %d,\n\t\t\t\"mes\": %d,\n\t\t\t\"ano\": %d\n\t\t},\n\t\t\"horario\":{\n\t\t\t\"hora\": %d,\n\t\t\t\"min\": %d,\n\t\t\t\"seg\": %d\n\t\t},\n\t\t\"estornada\": false\n\t}\n}",numVend,PRODUTO,ROTULO,VENDA/100,VENDA%100,PARCELAS,CARTAO,tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,tm.tm_hour,tm.tm_min,tm.tm_sec);
         //remover final do arquivo
         fseeko(fpV,-2,SEEK_END);
         off_t position = ftello(fpV);
@@ -1037,7 +932,7 @@ void PrintVenda(void){//STATE = 10
     }
     fpV = fopen(FImpressao,"wb");
     sprintf(impressaoBuffer,"\t%s\t\t%s\t\tCNPJ: %s\t\b\tDATA: %02d/%02d/%d TERMINAL: %s\t\b\n%s\n\n%s\n\b\tVALOR APROVADO: %s\t\b\n%s\n",
-            terminal[3],terminal[1],cnpj,tm.tm_mday,tm.tm_mon,tm.tm_year+1900,terminal[0],ROTULO,
+            terminal[3],terminal[1],cnpj,tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900,terminal[0],ROTULO,
             CARTAO,dataToAppend,terminal[4]);
     cDisplay(impressaoBuffer, impressao, nImpressaoWidth, TamImpressao);
     for(int i = 0; i < strlen(impressao); i++){
@@ -1097,7 +992,7 @@ void ResetVar(void){
 }
 
 void converterInt2Notacao(char *str, unsigned __int64 num){
-    char aux[] = "                    ";
+    char aux[] = "                     ";
     unsigned __int64 auxValor = num;
     sprintf(aux,"%I64u", num);
     int tamValor = strlen(aux);
@@ -1129,5 +1024,4 @@ void converterInt2Notacao(char *str, unsigned __int64 num){
         str[i] = aux[tamValor-1-i];
     }
 }
-
 

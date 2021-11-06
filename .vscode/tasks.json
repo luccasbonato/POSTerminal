@@ -1,27 +1,30 @@
 {
-    "tasks": [
-      {
-        "type": "cppbuild",
-        "label": "C/C++: gcc.exe build active file",
-        "command": "D:/VSCode-win32-x64-1.60.2/MinGW-x64/mingw64/bin/gcc.exe",
-        "args": [
-          "-g",
-          "${file}",
-          "-o",
-          "${fileDirname}\\${fileBasenameNoExtension}.exe"
-        ],
-        "options": {
-          "cwd": "${fileDirname}"
-        },
-        "problemMatcher": [
-          "$gcc"
-        ],
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        },
-        "detail": "compiler: D:/VSCode-win32-x64-1.60.2/MinGW-x64/mingw64/bin/gcc.exe"
-      }
-    ],
-    "version": "2.0.0"
-  }
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: Task C",
+			"command": "D:\\VSCode-win32-x64-1.60.2\\MinGW-x64\\mingw64\\bin\\gcc.exe",
+			"args": [
+				"-o",
+				"${fileDirname}\\${fileBasenameNoExtension}.exe",
+				"-I..",
+				"${file}",
+				"json.c",
+				"-lm",
+				"-g"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compilador: D:\\VSCode-win32-x64-1.60.2\\MinGW-x64\\mingw64\\bin\\gcc.exe"
+		}
+	]
+}
