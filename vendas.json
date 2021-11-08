@@ -1690,5 +1690,257 @@
 			"seg": 56
 		},
 		"estornada": false
+	},
+	"*Venda* #94": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 11,
+			"min": 6,
+			"seg": 32
+		},
+		"estornada": false
+	},
+	"*Venda* #95": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 13,
+			"min": 22,
+			"seg": 43
+		},
+		"estornada": false
+	},
+	"*Venda* #96": {
+		"tipo": 2,
+		"rotulo": "CREDITO PARCELADO",
+		"valor": 0.00,
+		"parcelas": 2,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 13,
+			"min": 23,
+			"seg": 23
+		},
+		"estornada": false
+	},
+	"*Venda* #97": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 11111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 13,
+			"min": 48,
+			"seg": 6
+		},
+		"estornada": false
+	},
+	"*Venda* #98": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 13,
+			"min": 50,
+			"seg": 11
+		},
+		"estornada": false
+	},
+	"*Venda* #99": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 11.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 14,
+			"min": 38,
+			"seg": 17
+		},
+		"estornada": false
+	},
+	"*Venda* #100": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 0.00,
+		"parcelas": 0,
+		"cartao": 1111111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 14,
+			"min": 41,
+			"seg": 50
+		},
+		"estornada": false
+	},
+	"*Venda* #101": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 11111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 14,
+			"min": 43,
+			"seg": 8
+		},
+		"estornada": false
+	},
+	"*Venda* #102": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 221.22,
+		"parcelas": 0,
+		"cartao": 11111121212233,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 15,
+			"min": 0,
+			"seg": 54
+		},
+		"estornada": false
+	},
+	"*Venda* #103": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 1111.11,
+		"parcelas": 0,
+		"cartao": 111111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 15,
+			"min": 6,
+			"seg": 20
+		},
+		"estornada": false
+	},
+	"*Venda* #104": {
+		"tipo": 2,
+		"rotulo": "CREDITO PARCELADO",
+		"valor": 222.22,
+		"parcelas": 2,
+		"cartao": 22222222222222,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 15,
+			"min": 6,
+			"seg": 30
+		},
+		"estornada": false
+	},
+	"*Venda* #105": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 1111111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 16,
+			"min": 27,
+			"seg": 10
+		},
+		"estornada": false
+	},
+	"*Venda* #106": {
+		"tipo": 2,
+		"rotulo": "CREDITO PARCELADO",
+		"valor": 222.22,
+		"parcelas": 22,
+		"cartao": 111121212222,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 16,
+			"min": 28,
+			"seg": 14
+		},
+		"estornada": false
+	},
+	"*Venda* #107": {
+		"tipo": 1,
+		"rotulo": "CREDITO A VISTA",
+		"valor": 111.11,
+		"parcelas": 0,
+		"cartao": 1111111111111,
+		"data":{
+			"dia": 8,
+			"mes": 11,
+			"ano": 2021
+		},
+		"horario":{
+			"hora": 16,
+			"min": 28,
+			"seg": 49
+		},
+		"estornada": false
 	}
 }

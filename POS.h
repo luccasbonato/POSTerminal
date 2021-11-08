@@ -34,6 +34,16 @@
 #define Key09 0x9
 #define Key00 0x0
 
+//define dos IDs de Erros
+#define ERRO_NADA 0x00
+#define ERRO_ESTADO_NAO_REC 0x01
+#define ERRO_VALOR_MIN 0x02
+#define ERRO_VALOR_MAX 0x03
+#define ERRO_CARTAO_INVALIDO 0x04
+#define ERRO_OPERACAO_CANCELADA 0x05
+#define ERRO_PARCELA_INVALIDA 0x06
+
+
 const int TamDisplay = nDisplayWidth*nDisplayHeight;
 const int TamImpressao = nImpressaoWidth*nImpressaoHeight;
 char *display, *displayBuffer, **terminal, **produtos, **idProduto, *impressao, *impressaoBuffer;
@@ -62,32 +72,62 @@ char *sERRO;
 char VALOR[] = "                0,00";
 char CARTAO[] = "                     ";
 char sCARTAO[] = "                     ";
+char CNPJ[] = "99.999.999/9999-99";
+
+//FUNCOES TERMINAL
+void iniciarPOS(void);
+void configTerminal(void);
+void maquinaEstados(void);
+void displayTerminal(void);
+void getNumVendas(void);
+void ResetVar(void);
+void freeVariaveis(void);
+
+//ESTADOS
+//define dos estados
+#define ESTADO_TELA_PRINCIPAL 0x00
+void TelaPrincipal(void);
+
+#define ESTADO_MENU_VENDA 0x01
+void TelaMenuVenda(void);
+
+#define ESTADO_MENU_ESTORNO 0x02
+void TelaMenuEstorno(void);
+
+#define ESTADO_VALOR_VENDA 0x03
+void TelaValorVenda(void);
+
+#define ESTADO_NUM_PARCELAS 0x04
+void TelaNumParcelas(void);
+
+#define ESTADO_NUM_CARTAO 0x05
+void TelaNumCartao(void);
+
+#define ESTADO_CONFIRM_VENDA 0x06
+void TelaComfirmVenda(void);
+
+#define ESTADO_CONFIRM_ESTORNO 0x07
+void TelaComfirmEstorno(void);
+
+#define ESTADO_RELAT_DATA 0x08
+void TelaRelatData(void);
+
+#define ESTADO_ERRO 0x09
+void TelaErro(void);
+
+#define ESTADO_PRINT_VENDA 0x10
+void PrintVenda(void);
+
+#define ESTADO_PRINT_ESTORNO 0x11
+void PrintEstorno(void);
+
+#define ESTADO_PRINT_RELATORIO 0x12
+void PrintRelatorio(void);
 
 //FUNCOES AUXILIARES
 void cDisplay(char* printScreen, char* screen, int nScreenWidth, int TamScreen);
 int ReadKey(void);
 void converterInt2Notacao(char *str, unsigned __int64 num);
+void converterCartao2Notacao(char *src, char *dst);
+void converterCNPJ2Notacao(char *src, char *dst);
 
-//FUNCOES TERMINAL
-void ResetVar(void);
-void iniciarPOS(void);
-void configTerminal(void);
-void freeVariaveis(void);
-void maquinaEstados(void);
-void displayTerminal(void);
-
-//ESTADOS
-void TelaPrincipal(void);
-void TelaMenuVenda(void);
-void TelaMenuEstorno(void);
-void TelaValorVenda(void);
-void TelaNumParcelas(void);
-void TelaNumCartao(void);
-void TelaComfirmVenda(void);
-void TelaComfirmEstorno(void);
-void TelaRelatData(void);
-void TelaErro(void);
-void PrintVenda(void);
-void PrintEstorno(void);
-void PrintRelatorio(void);
-void converterCartao2Notacao(char *str, unsigned __int64 num);

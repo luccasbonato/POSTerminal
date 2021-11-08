@@ -2,7 +2,7 @@
     Av. Ruy Carneiro, 300. Miramar.     
         CNPJ: 21.505.538/0001-28        
                                         
-  DATA: 05/11/2021 TERMINAL: TERM0001   
+  DATA: 08/11/2021 TERMINAL: TERM0001   
                                         
 CREDITO A VISTA                         
 *********1111                           
